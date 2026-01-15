@@ -200,6 +200,14 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
     )
   })
 
+  // Read all SVG files content
+  const svgContents = await Promise.all(
+    svgFiles.map(async (svgFile) => {
+      const content = await readFile(svgFile)
+      return content
+    }),
+  )
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -385,28 +393,18 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
 
   <script>
     const icons = ${JSON.stringify(componentNames)};
-    const svgFiles = ${JSON.stringify(svgFiles.map(f => path.basename(f)))};
+    const svgContents = ${JSON.stringify(svgContents)};
 
     let currentSize = 48;
     let currentColor = '#333333';
     let searchQuery = '';
 
-    async function loadSvg(filename) {
-      try {
-        const response = await fetch('../${path.relative(config.output, config.input)}/' + filename);
-        return await response.text();
-      } catch (error) {
-        return '<svg viewBox="0 0 24 24"><text x="12" y="12" text-anchor="middle">?</text></svg>';
-      }
-    }
-
-    async function renderIcons() {
+    function renderIcons() {
       const grid = document.getElementById('iconGrid');
       grid.innerHTML = '';
 
       const filteredIcons = icons.filter((name, index) =>
-        name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        svgFiles[index].toLowerCase().includes(searchQuery.toLowerCase())
+        name.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
       if (filteredIcons.length === 0) {
@@ -417,7 +415,7 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
       for (let i = 0; i < filteredIcons.length; i++) {
         const iconName = filteredIcons[i];
         const svgIndex = icons.indexOf(iconName);
-        const svgFile = svgFiles[svgIndex];
+        const svgContent = svgContents[svgIndex];
 
         const card = document.createElement('div');
         card.className = 'icon-card';
@@ -426,7 +424,7 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
         const wrapper = document.createElement('div');
         wrapper.className = 'icon-wrapper';
 
-        wrapper.innerHTML = await loadSvg(svgFile);
+        wrapper.innerHTML = svgContent;
 
         const svg = wrapper.querySelector('svg');
         if (svg) {
@@ -434,6 +432,12 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
           svg.setAttribute('height', currentSize);
           svg.setAttribute('stroke', currentColor);
           svg.setAttribute('fill', 'none');
+
+          // Update stroke color for all child elements
+          const elements = svg.querySelectorAll('[stroke]');
+          elements.forEach(el => {
+            el.setAttribute('stroke', currentColor);
+          });
         }
 
         const name = document.createElement('div');
