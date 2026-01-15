@@ -1,0 +1,57 @@
+import { createElement } from 'react'
+import type { IconNode, IconProps } from 'vectify'
+import type { FC, ReactNode } from 'react'
+
+export interface CreateIconProps extends IconProps {
+  size?: number | string
+  color?: string
+  strokeWidth?: number | string
+  className?: string
+}
+
+export function createIcon(name: string,  iconNode: IconNode[]): FC<CreateIconProps> {
+  const Icon: FC<CreateIconProps> = ({
+    size = 24,
+    color = 'currentColor',
+    strokeWidth = 2,
+    className,
+    ...props
+  }) => {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+        {...props}
+      >
+        {renderIconNode(iconNode)}
+      </svg>
+    )
+  }
+
+  Icon.displayName = name
+  return Icon
+}
+
+function renderIconNode(nodes: IconNode[]): ReactNode {
+  return nodes.map((node, index) => {
+    const [type, attrs, children] = node
+    const props = { key: index, ...attrs }
+
+    if (children && children.length > 0) {
+      return createElement(
+        type,
+        props,
+        renderIconNode(children)
+      )
+    }
+
+    return createElement(type, props)
+  })
+}

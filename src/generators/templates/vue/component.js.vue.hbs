@@ -1,0 +1,21 @@
+<template>
+  <Icon :iconNode="iconNode" v-bind="$attrs" />
+</template>
+
+<script>
+import { defineComponent } from 'vue'
+import Icon from './Icon.vue'
+
+export default defineComponent({
+  name: '{{componentName}}',
+  components: { Icon },
+  inheritAttrs: false,
+  setup() {
+    const iconNode = [
+{{{formattedNodes}}}
+    ]
+
+    return { iconNode }
+  }
+})
+</script>

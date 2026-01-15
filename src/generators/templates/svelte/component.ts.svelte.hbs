@@ -1,0 +1,10 @@
+<script lang="ts">
+  import Icon from './Icon.svelte'
+  import type { IconNode } from 'vectify'
+
+  const iconNode: IconNode[] = [
+{{{formattedNodes}}}
+  ]
+</script>
+
+<Icon {iconNode} {...$$restProps} />

@@ -1,7 +1,7 @@
 import type { GenerationStats, IconForgeConfig } from '../types'
 import path from 'node:path'
 import { optimizeSvg } from '../parsers/optimizer'
-import { parseSvg } from '../parsers/svgParser'
+import { parseSvg } from '../parsers/svg-parser'
 import { ensureDir, getComponentName, getSvgFiles, readFile, writeFile } from '../utils/helpers'
 import { generateCreateIcon, generateReactComponent } from './react'
 import { generateSvelteComponent, generateSvelteIcon } from './svelte'

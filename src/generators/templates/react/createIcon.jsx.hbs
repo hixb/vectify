@@ -1,0 +1,48 @@
+import { createElement } from 'react'
+
+export function createIcon(name, iconNode) {
+  const Icon = ({
+    size = 24,
+    color = 'currentColor',
+    strokeWidth = 2,
+    className,
+    ...props
+  }) => {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+        {...props}
+      >
+        {renderIconNode(iconNode)}
+      </svg>
+    )
+  }
+
+  Icon.displayName = name
+  return Icon
+}
+
+function renderIconNode(nodes) {
+  return nodes.map((node, index) => {
+    const [type, attrs, children] = node
+    const props = { key: index, ...attrs }
+
+    if (children && children.length > 0) {
+      return createElement(
+        type,
+        props,
+        renderIconNode(children)
+      )
+    }
+
+    return createElement(type, props)
+  })
+}

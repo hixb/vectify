@@ -1,0 +1,70 @@
+<template>
+  <svg
+    :width="size"
+    :height="size"
+    viewBox="0 0 24 24"
+    fill="none"
+    :stroke="color"
+    :stroke-width="strokeWidth"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    :class="className"
+    v-bind="$attrs"
+  >
+    <component
+      v-for="(node, index) in iconNode"
+      :key="index"
+      :is="renderNode(node)"
+    />
+  </svg>
+</template>
+
+<script>
+import { defineComponent, h } from 'vue'
+
+export default defineComponent({
+  name: 'Icon',
+  inheritAttrs: false,
+  props: {
+    iconNode: {
+      type: Array,
+      required: true
+    },
+    size: {
+      type: [Number, String],
+      default: 24
+    },
+    color: {
+      type: String,
+      default: 'currentColor'
+    },
+    strokeWidth: {
+      type: [Number, String],
+      default: 2
+    },
+    className: {
+      type: String,
+      default: ''
+    }
+  },
+  setup(props) {
+    function renderNode(node) {
+      const [type, attrs, children] = node
+
+      if (children && children.length > 0) {
+        return h(
+          type,
+          attrs,
+          children.map(child => renderNode(child))
+        )
+      }
+
+      return h(type, attrs)
+    }
+
+    return {
+      renderNode
+    }
+  }
+})
+</script>
