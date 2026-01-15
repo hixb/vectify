@@ -213,190 +213,60 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Icon Preview - ${componentNames.length} Icons</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: #f5f5f5;
-      padding: 2rem;
-    }
-
-    .header {
-      background: white;
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      color: #333;
-      margin-bottom: 0.5rem;
-    }
-
-    .subtitle {
-      color: #666;
-      font-size: 0.9rem;
-    }
-
-    .controls {
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .control-group {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    label {
-      font-size: 0.875rem;
-      color: #666;
-      font-weight: 500;
-    }
-
-    input[type="range"] {
-      width: 120px;
-    }
-
-    input[type="color"] {
-      width: 50px;
-      height: 32px;
-      border: 2px solid #e0e0e0;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    input[type="search"] {
-      flex: 1;
-      min-width: 200px;
-      padding: 0.5rem 1rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 6px;
-      font-size: 0.875rem;
-    }
-
-    input[type="search"]:focus {
-      outline: none;
-      border-color: #4f46e5;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .icon-card {
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      transition: all 0.2s;
-      cursor: pointer;
-    }
-
-    .icon-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .icon-wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 80px;
-    }
-
-    .icon-card svg {
-      transition: all 0.2s;
-    }
-
-    .icon-name {
-      font-size: 0.75rem;
-      color: #666;
-      text-align: center;
-      word-break: break-word;
-      width: 100%;
-    }
-
-    .copied {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      background: #10b981;
-      color: white;
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      animation: slideIn 0.3s ease;
-    }
-
-    @keyframes slideIn {
-      from {
-        transform: translateX(400px);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-
-    .no-results {
-      text-align: center;
-      padding: 4rem 2rem;
-      color: #999;
-      grid-column: 1 / -1;
-    }
-  </style>
+  <title>Icons - ${componentNames.length} Total</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body>
-  <div class="header">
-    <h1>Icon Preview</h1>
-    <p class="subtitle">${componentNames.length} icons generated • Framework: ${config.framework}</p>
-  </div>
+<body class="bg-white">
+  <div class="max-w-[1400px] mx-auto px-6 py-12">
+    <header class="mb-12">
+      <h1 class="text-3xl font-semibold text-gray-900 mb-2">Icons</h1>
+      <p class="text-sm text-gray-600">${componentNames.length} icons • ${config.framework} • Click to copy name</p>
+    </header>
 
-  <div class="controls">
-    <input type="search" id="search" placeholder="Search icons...">
-    <div class="control-group">
-      <label for="size">Size:</label>
-      <input type="range" id="size" min="16" max="128" value="48" step="8">
-      <span id="sizeValue">48px</span>
-    </div>
-    <div class="control-group">
-      <label for="color">Color:</label>
-      <input type="color" id="color" value="#333333">
-    </div>
-  </div>
+    <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-200">
+      <div class="flex-1">
+        <input
+          type="search"
+          id="search"
+          placeholder="Search icons..."
+          class="w-full h-10 px-4 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-gray-900 transition-colors"
+        />
+      </div>
 
-  <div class="grid" id="iconGrid"></div>
+      <div class="flex items-center gap-3">
+        <label for="size" class="text-sm text-gray-600">Size</label>
+        <input
+          type="range"
+          id="size"
+          min="16"
+          max="96"
+          value="32"
+          step="8"
+          class="w-24 h-1 accent-gray-900"
+        />
+        <span id="sizeValue" class="text-sm text-gray-900 w-10">32px</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <label for="color" class="text-sm text-gray-600">Color</label>
+        <input
+          type="color"
+          id="color"
+          value="#171717"
+          class="w-10 h-10 rounded-lg border border-gray-300 cursor-pointer"
+        />
+      </div>
+    </div>
+
+    <div id="iconGrid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-1"></div>
+  </div>
 
   <script>
     const icons = ${JSON.stringify(componentNames)};
     const svgContents = ${JSON.stringify(svgContents)};
 
-    let currentSize = 48;
-    let currentColor = '#333333';
+    let currentSize = 32;
+    let currentColor = '#171717';
     let searchQuery = '';
 
     function renderIcons() {
@@ -408,7 +278,7 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
       );
 
       if (filteredIcons.length === 0) {
-        grid.innerHTML = '<div class="no-results">No icons found matching "' + searchQuery + '"</div>';
+        grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-400 text-sm">No icons found</div>';
         return;
       }
 
@@ -418,11 +288,12 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
         const svgContent = svgContents[svgIndex];
 
         const card = document.createElement('div');
-        card.className = 'icon-card';
+        card.className = 'group relative aspect-square flex flex-col items-center justify-center p-4 rounded-lg border border-transparent hover:border-gray-200 hover:bg-gray-50 transition-all cursor-pointer';
         card.onclick = () => copyToClipboard(iconName);
+        card.title = iconName;
 
         const wrapper = document.createElement('div');
-        wrapper.className = 'icon-wrapper';
+        wrapper.className = 'flex items-center justify-center mb-2';
 
         wrapper.innerHTML = svgContent;
 
@@ -441,7 +312,7 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
         }
 
         const name = document.createElement('div');
-        name.className = 'icon-name';
+        name.className = 'text-[10px] text-gray-500 text-center truncate w-full group-hover:text-gray-900';
         name.textContent = iconName;
 
         card.appendChild(wrapper);
@@ -457,15 +328,23 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
     }
 
     function showCopiedNotification(text) {
-      const existing = document.querySelector('.copied');
+      const existing = document.querySelector('.toast');
       if (existing) existing.remove();
 
       const notification = document.createElement('div');
-      notification.className = 'copied';
-      notification.textContent = 'Copied: ' + text;
+      notification.className = 'toast fixed bottom-6 right-6 bg-gray-900 text-white text-sm px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2 transition-opacity';
+      notification.innerHTML = \`
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span>Copied \${text}</span>
+      \`;
       document.body.appendChild(notification);
 
-      setTimeout(() => notification.remove(), 2000);
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 200);
+      }, 1800);
     }
 
     document.getElementById('size').addEventListener('input', (e) => {
