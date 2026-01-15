@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icons - 1 Total</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-white">
+  <div class="max-w-[1400px] mx-auto px-6 py-12">
+    <header class="mb-12">
+      <h1 class="text-3xl font-semibold text-gray-900 mb-2">Icons</h1>
+      <p class="text-sm text-gray-600">1 icons • vue • Click to copy name</p>
+    </header>
+
+    <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-200">
+      <div class="flex-1">
+        <input
+          type="search"
+          id="search"
+          placeholder="Search icons..."
+          class="w-full h-10 px-4 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-gray-900 transition-colors"
+        />
+      </div>
+
+      <div class="flex items-center gap-3">
+        <label for="size" class="text-sm text-gray-600">Size</label>
+        <input
+          type="range"
+          id="size"
+          min="16"
+          max="96"
+          value="32"
+          step="8"
+          class="w-24 h-1 accent-gray-900"
+        />
+        <span id="sizeValue" class="text-sm text-gray-900 w-10">32px</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <label for="color" class="text-sm text-gray-600">Color</label>
+        <input
+          type="color"
+          id="color"
+          value="#171717"
+          class="w-10 h-10 rounded-lg border border-gray-300 cursor-pointer"
+        />
+      </div>
+    </div>
+
+    <div id="iconGrid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-1"></div>
+  </div>
+
+  <script>
+    const icons = ["AirpodCase1"];
+    const svgContents = ["<svg id=\"Airpod case 1\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n    <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M11.1454 9.19863H8.69643V8.15331H7.81365C6.70869 8.15331 5.69327 7.62448 5.06983 6.80419C4.85695 6.52288 4.7522 6.17403 4.7522 5.82171V3.9835C4.7522 3.63039 4.85779 3.28065 5.07068 2.99934C5.63076 2.26017 6.50003 1.77105 7.47912 1.72205C9.34015 1.63589 11.1454 3.24856 11.1454 5.10873V9.19863ZM7.04995 3.87899C7.38907 3.87899 7.66397 4.1539 7.66397 4.49301V5.50388C7.66397 5.84299 7.38907 6.1179 7.04995 6.1179C6.71084 6.1179 6.43594 5.84299 6.43594 5.50388V4.49301C6.43594 4.1539 6.71084 3.87899 7.04995 3.87899Z\" fill=\"#FFFFFF\"></path>\n    <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M13.4534 5.10873V9.19863H15.9024V8.15331H16.7852C17.8902 8.15331 18.9056 7.62448 19.529 6.80419C19.7419 6.52288 19.8466 6.17403 19.8466 5.82171V3.9835C19.8466 3.63039 19.7411 3.28065 19.5282 2.99934C18.9681 2.26017 18.0988 1.77105 17.1197 1.72205C15.2587 1.63589 13.4534 3.24856 13.4534 5.10873ZM16.9349 4.49301C16.9349 4.1539 17.2098 3.87899 17.5489 3.87899C17.888 3.87899 18.1629 4.1539 18.1629 4.49301V5.50388C18.1629 5.84299 17.888 6.1179 17.5489 6.1179C17.2098 6.1179 16.9349 5.84299 16.9349 5.50388V4.49301Z\" fill=\"#FFFFFF\"></path>\n    <path opacity=\"0.4\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M6.63995 9.78125C5.45779 9.78125 4.5 10.7397 4.5 11.9206V16.9363C4.5 19.457 6.54381 21.5003 9.06299 21.5003H15.621C18.1423 21.5003 20.184 19.4568 20.184 16.9363V11.9206C20.184 10.7399 19.2263 9.78125 18.045 9.78125H6.63995Z\" fill=\"#FFFFFF\"></path>\n    <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M11.3965 17.4046C11.3965 16.8826 11.8196 16.459 12.3421 16.459C12.864 16.459 13.2878 16.882 13.2878 17.4046C13.2878 17.9273 12.864 18.3503 12.3421 18.3503C11.8196 18.3503 11.3965 17.9267 11.3965 17.4046Z\" fill=\"#FFFFFF\"></path>\n</svg>"];
+
+    let currentSize = 32;
+    let currentColor = '#171717';
+    let searchQuery = '';
+
+    function renderIcons() {
+      const grid = document.getElementById('iconGrid');
+      grid.innerHTML = '';
+
+      const filteredIcons = icons.filter((name, index) =>
+        name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+      if (filteredIcons.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-400 text-sm">No icons found</div>';
+        return;
+      }
+
+      for (let i = 0; i < filteredIcons.length; i++) {
+        const iconName = filteredIcons[i];
+        const svgIndex = icons.indexOf(iconName);
+        const svgContent = svgContents[svgIndex];
+
+        const card = document.createElement('div');
+        card.className = 'group relative aspect-square flex flex-col items-center justify-center p-4 rounded-lg border border-transparent hover:border-gray-200 hover:bg-gray-50 transition-all cursor-pointer';
+        card.onclick = () => copyToClipboard(iconName);
+        card.title = iconName;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex items-center justify-center mb-2';
+
+        wrapper.innerHTML = svgContent;
+
+        const svg = wrapper.querySelector('svg');
+        if (svg) {
+          svg.setAttribute('width', currentSize);
+          svg.setAttribute('height', currentSize);
+          svg.setAttribute('stroke', currentColor);
+          svg.setAttribute('fill', 'none');
+
+          // Update stroke color for all child elements
+          const elements = svg.querySelectorAll('[stroke]');
+          elements.forEach(el => {
+            el.setAttribute('stroke', currentColor);
+          });
+        }
+
+        const name = document.createElement('div');
+        name.className = 'text-[10px] text-gray-500 text-center truncate w-full group-hover:text-gray-900';
+        name.textContent = iconName;
+
+        card.appendChild(wrapper);
+        card.appendChild(name);
+        grid.appendChild(card);
+      }
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showCopiedNotification(text);
+      });
+    }
+
+    function showCopiedNotification(text) {
+      const existing = document.querySelector('.toast');
+      if (existing) existing.remove();
+
+      const notification = document.createElement('div');
+      notification.className = 'toast fixed bottom-6 right-6 bg-gray-900 text-white text-sm px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2 transition-opacity';
+      notification.innerHTML = `
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span>Copied ${text}</span>
+      `;
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 200);
+      }, 1800);
+    }
+
+    document.getElementById('size').addEventListener('input', (e) => {
+      currentSize = e.target.value;
+      document.getElementById('sizeValue').textContent = currentSize + 'px';
+      renderIcons();
+    });
+
+    document.getElementById('color').addEventListener('input', (e) => {
+      currentColor = e.target.value;
+      renderIcons();
+    });
+
+    document.getElementById('search').addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderIcons();
+    });
+
+    renderIcons();
+  </script>
+</body>
+</html>

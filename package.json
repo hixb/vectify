@@ -1,6 +1,7 @@
 {
   "name": "vectify",
   "version": "1.0.0",
+  "packageManager": "pnpm@9.15.9",
   "description": "A powerful command-line tool to generate React, Vue, and Svelte icon components from SVG files",
   "author": "Xiaobing Zhu <hellozxb252@gmail.com>",
   "license": "MIT",
@@ -69,7 +70,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^7.0.0",
     "@types/inquirer": "^9.0.7",
-    "@types/node": "^20.0.0",
+    "@types/node": "^22.10.5",
     "eslint": "^9.39.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",

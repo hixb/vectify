@@ -1,13 +1,13 @@
-import { createElement, forwardRef } from 'react'
-import type { IconNode, IconProps } from 'vectify'
 import type { ReactNode, SVGProps } from 'react'
+import type { IconNode, IconProps } from 'vectify'
+import { createElement, forwardRef } from 'react'
 
 export interface CreateIconProps extends IconProps, Omit<SVGProps<SVGSVGElement>, keyof IconProps> {
-  size?: number | string
-  color?: string
-  strokeWidth?: number | string
-  className?: string
-  title?: string
+  'size'?: number | string
+  'color'?: string
+  'strokeWidth'?: number | string
+  'className'?: string
+  'title'?: string
   'aria-label'?: string
   'aria-hidden'?: boolean | 'true' | 'false'
 }
@@ -36,7 +36,7 @@ export function createIcon(name: string, iconNode: IconNode[], keepColors = fals
         width={size}
         height={size}
         viewBox="0 0 24 24"
-        fill={keepColors ? undefined : "none"}
+        fill={keepColors ? undefined : 'none'}
         stroke={keepColors ? undefined : color}
         strokeWidth={keepColors ? undefined : strokeWidth}
         strokeLinecap="round"
@@ -66,7 +66,7 @@ function renderIconNode(nodes: IconNode[]): ReactNode {
       return createElement(
         type,
         props,
-        renderIconNode(children)
+        renderIconNode(children),
       )
     }
 
