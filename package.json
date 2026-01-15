@@ -24,12 +24,6 @@
     "vectify",
     "vector"
   ],
-  "bin": {
-    "vectify": "./dist/index.js"
-  },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -37,9 +31,15 @@
       "require": "./dist/index.js"
     }
   },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "vectify": "./dist/index.js"
+  },
   "files": [
-    "dist",
-    "README.md"
+    "README.md",
+    "dist"
   ],
   "engines": {
     "node": ">=18.0.0"
