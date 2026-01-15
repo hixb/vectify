@@ -1,7 +1,7 @@
 {{#if typescript}}
 import type { IconNode, IconProps } from 'vectify'
 {{/if}}
-import { createIcon } from '../createIcon'
+import { createIcon } from './createIcon'
 
 export const iconNode{{#if typescript}}: IconNode[]{{/if}} = [
 {{{formattedNodes}}}
