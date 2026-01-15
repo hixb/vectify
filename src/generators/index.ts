@@ -3,9 +3,7 @@ import path from 'node:path'
 import { optimizeSvg } from '../parsers/optimizer'
 import { parseSvg } from '../parsers/svg-parser'
 import { ensureDir, getComponentName, getSvgFiles, readFile, writeFile } from '../utils/helpers'
-import { generateCreateIcon, generateReactComponent } from './react'
-import { generateSvelteComponent, generateSvelteIcon } from './svelte'
-import { generateVueComponent, generateVueIcon } from './vue'
+import { getFrameworkStrategy } from './framework-strategy'
 
 /**
  * Generate all icon components
@@ -107,32 +105,25 @@ async function generateIconComponent(
     config.transform,
   )
 
-  // Generate component code
-  let code = ''
+  // Get framework strategy
+  const strategy = getFrameworkStrategy(config.framework)
+  const typescript = config.typescript ?? true
 
-  switch (config.framework) {
-    case 'react':
-      code = generateReactComponent(componentName, iconNode, config.typescript ?? true, config.keepColors ?? false)
-      break
-    case 'vue':
-      code = generateVueComponent(componentName, iconNode, config.typescript ?? true)
-      break
-    case 'svelte':
-      code = generateSvelteComponent(componentName, iconNode, config.typescript ?? true)
-      break
-  }
+  // Generate component code using strategy
+  let code = strategy.generateComponent(
+    componentName,
+    iconNode,
+    typescript,
+    config.keepColors ?? false,
+  )
 
   // Call afterGenerate hook
   if (config.hooks?.afterGenerate) {
     code = await config.hooks.afterGenerate(code, componentName)
   }
 
-  // Determine file extension
-  const fileExt = config.framework === 'react'
-    ? (config.typescript ? 'tsx' : 'jsx')
-    : config.framework === 'vue'
-      ? 'vue'
-      : 'svelte'
+  // Get file extension from strategy
+  const fileExt = strategy.getComponentExtension(typescript)
 
   // Write component file (skip in dry-run)
   const outputPath = path.join(config.output, `${componentName}.${fileExt}`)
@@ -149,24 +140,10 @@ async function generateIconComponent(
  */
 async function generateBaseComponent(config: IconForgeConfig, dryRun = false): Promise<void> {
   const typescript = config.typescript ?? true
+  const strategy = getFrameworkStrategy(config.framework)
 
-  let code = ''
-  let fileName = ''
-
-  switch (config.framework) {
-    case 'react':
-      code = generateCreateIcon(typescript)
-      fileName = `createIcon.${typescript ? 'tsx' : 'jsx'}`
-      break
-    case 'vue':
-      code = generateVueIcon(typescript)
-      fileName = 'Icon.vue'
-      break
-    case 'svelte':
-      code = generateSvelteIcon(typescript)
-      fileName = 'Icon.svelte'
-      break
-  }
+  // Generate base component using strategy
+  const { code, fileName } = strategy.generateBaseComponent(typescript)
 
   const outputPath = path.join(config.output, fileName)
   if (dryRun) {
@@ -181,7 +158,10 @@ async function generateBaseComponent(config: IconForgeConfig, dryRun = false): P
  * Generate index file
  */
 async function generateIndexFile(svgFiles: string[], config: IconForgeConfig, dryRun = false): Promise<void> {
-  const ext = config.typescript ? 'ts' : 'js'
+  const typescript = config.typescript ?? true
+  const strategy = getFrameworkStrategy(config.framework)
+  const ext = strategy.getIndexExtension(typescript)
+  const componentExt = strategy.getComponentExtension(typescript)
 
   const exports = svgFiles
     .map((svgFile) => {
@@ -193,13 +173,7 @@ async function generateIndexFile(svgFiles: string[], config: IconForgeConfig, dr
         config.transform,
       )
 
-      const fileExt = config.framework === 'react'
-        ? (config.typescript ? 'tsx' : 'jsx')
-        : config.framework === 'vue'
-          ? 'vue'
-          : 'svelte'
-
-      return `export { default as ${componentName} } from './${componentName}.${fileExt}'`
+      return `export { default as ${componentName} } from './${componentName}.${componentExt}'`
     })
     .join('\n')
 
@@ -420,8 +394,7 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
     async function loadSvg(filename) {
       try {
         const response = await fetch('../${path.relative(config.output, config.input)}/' + filename);
-        const svgText = await response.text();
-        return svgText;
+        return await response.text();
       } catch (error) {
         return '<svg viewBox="0 0 24 24"><text x="12" y="12" text-anchor="middle">?</text></svg>';
       }
@@ -453,8 +426,7 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
         const wrapper = document.createElement('div');
         wrapper.className = 'icon-wrapper';
 
-        const svgContent = await loadSvg(svgFile);
-        wrapper.innerHTML = svgContent;
+        wrapper.innerHTML = await loadSvg(svgFile);
 
         const svg = wrapper.querySelector('svg');
         if (svg) {

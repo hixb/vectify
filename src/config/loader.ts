@@ -2,6 +2,7 @@ import type { IconForgeConfig } from '../types'
 import path from 'node:path'
 import process from 'node:process'
 import { createJiti } from 'jiti'
+import { frameworkRegistry } from '../generators/framework-strategy'
 
 /**
  * Default configuration
@@ -80,11 +81,13 @@ export async function loadConfig(configPath: string): Promise<IconForgeConfig> {
 
   // Validate required fields
   if (!mergedConfig.framework) {
-    throw new Error('Config must specify a framework (react, vue, or svelte)')
+    const supported = frameworkRegistry.getSupportedFrameworks().join(', ')
+    throw new Error(`Config must specify a framework (${supported})`)
   }
 
-  if (!['react', 'vue', 'svelte'].includes(mergedConfig.framework)) {
-    throw new Error(`Invalid framework: ${mergedConfig.framework}. Must be react, vue, or svelte`)
+  if (!frameworkRegistry.has(mergedConfig.framework)) {
+    const supported = frameworkRegistry.getSupportedFrameworks().join(', ')
+    throw new Error(`Invalid framework: ${mergedConfig.framework}. Supported: ${supported}`)
   }
 
   return mergedConfig

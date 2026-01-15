@@ -78,6 +78,9 @@ if (!process.argv.slice(2).length) {
 
 export { findConfig, loadConfig } from './config/loader'
 export { generateIcons } from './generators'
+// Export framework strategy system for extensibility
+export { frameworkRegistry, getFrameworkStrategy } from './generators/framework-strategy'
+export type { FrameworkStrategy } from './generators/framework-strategy'
 // Export for programmatic usage
 export * from './types'
 export { generate, init, watch }

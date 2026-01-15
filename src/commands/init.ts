@@ -3,6 +3,7 @@ import process from 'node:process'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
 import ora from 'ora'
+import { frameworkRegistry } from '../generators/framework-strategy'
 import { fileExists, writeFile } from '../utils/helpers'
 
 export interface InitOptions {
@@ -56,17 +57,20 @@ export async function init(options: InitOptions = {}): Promise<void> {
 
     spinner.stop()
 
+    // Get supported frameworks dynamically
+    const supportedFrameworks = frameworkRegistry.getSupportedFrameworks()
+    const frameworkChoices = supportedFrameworks.map(fw => ({
+      name: fw.charAt(0).toUpperCase() + fw.slice(1),
+      value: fw,
+    }))
+
     // Ask configuration questions
     const answers = await inquirer.prompt([
       {
         type: 'list',
         name: 'framework',
         message: 'Which framework are you using?',
-        choices: [
-          { name: 'React', value: 'react' },
-          { name: 'Vue 3', value: 'vue' },
-          { name: 'Svelte', value: 'svelte' },
-        ],
+        choices: frameworkChoices,
       },
       {
         type: 'input',
@@ -132,10 +136,7 @@ export async function init(options: InitOptions = {}): Promise<void> {
 /**
  * Generate config file content
  */
-function generateConfigContent(
-  answers: any,
-  configDir: string,
-): string {
+function generateConfigContent(answers: any, configDir: string): string {
   return `import { defineConfig } from 'vectify'
 
 export default defineConfig({
