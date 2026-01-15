@@ -42,6 +42,7 @@ program
   .command('generate')
   .description('Generate icon components from SVG files')
   .option('-c, --config <path>', 'Path to config file')
+  .option('--dry-run', 'Preview what will be generated without writing files')
   .action(async (options) => {
     try {
       await generate(options)

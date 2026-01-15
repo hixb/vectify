@@ -5,6 +5,7 @@ import { generateIcons } from '../generators'
 
 export interface GenerateOptions {
   config?: string
+  dryRun?: boolean
 }
 
 /**
@@ -30,12 +31,19 @@ export async function generate(options: GenerateOptions = {}): Promise<void> {
     const config = await loadConfig(configPath)
     spinner.succeed(`Config loaded from ${chalk.green(configPath)}`)
 
+    // Dry run mode
+    if (options.dryRun) {
+      spinner.info(chalk.cyan('Dry run mode - no files will be written'))
+      console.log(`\n${chalk.bold('Files that would be generated:')}\n`)
+    }
+
     // Generate icons
-    spinner.start('Generating icon components...')
-    const stats = await generateIcons(config)
+    const actionText = options.dryRun ? 'Analyzing icons...' : 'Generating icon components...'
+    spinner.start(actionText)
+    const stats = await generateIcons(config, options.dryRun)
 
     if (stats.failed > 0) {
-      spinner.warn(`Generated ${chalk.green(stats.success)} icons, ${chalk.red(stats.failed)} failed`)
+      spinner.warn(`${options.dryRun ? 'Analyzed' : 'Generated'} ${chalk.green(stats.success)} icons, ${chalk.red(stats.failed)} failed`)
 
       // Show errors
       if (stats.errors.length > 0) {
@@ -46,11 +54,23 @@ export async function generate(options: GenerateOptions = {}): Promise<void> {
       }
     }
     else {
-      spinner.succeed(`Generated ${chalk.green(stats.success)} icon components`)
+      const message = options.dryRun
+        ? `Would generate ${chalk.green(stats.success)} icon components`
+        : `Generated ${chalk.green(stats.success)} icon components`
+      spinner.succeed(message)
     }
 
     // Show output location
-    console.log(`\n${chalk.bold('Output:')} ${chalk.cyan(config.output)}`)
+    if (options.dryRun) {
+      console.log(`\n${chalk.bold('Target directory:')} ${chalk.cyan(config.output)}`)
+      console.log(chalk.gray('\nRun without --dry-run to generate files'))
+    }
+    else {
+      console.log(`\n${chalk.bold('Output:')} ${chalk.cyan(config.output)}`)
+      if (config.generateOptions?.preview) {
+        console.log(`${chalk.bold('Preview:')} ${chalk.cyan(`${config.output}/preview.html`)}`)
+      }
+    }
   }
   catch (error: any) {
     spinner.fail('Generation failed')

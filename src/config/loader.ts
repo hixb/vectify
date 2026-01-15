@@ -18,6 +18,7 @@ const DEFAULT_CONFIG: Partial<IconForgeConfig> = {
   generateOptions: {
     index: true,
     types: true,
+    preview: false,
   },
   watch: {
     enabled: false,

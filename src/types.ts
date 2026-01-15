@@ -136,6 +136,12 @@ export interface IconForgeConfig {
      * @default true
      */
     types?: boolean
+
+    /**
+     * Generate preview.html to visualize icons
+     * @default false
+     */
+    preview?: boolean
   }
 
   /**
