@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import Handlebars from 'handlebars'
 
 /**
@@ -16,12 +17,19 @@ export interface TemplateData {
  * Get the templates directory path
  * When bundled by tsup:
  * - CJS: code is in dist/index.js, __dirname = dist/
- * - ESM: code is in dist/chunk-*.mjs, __dirname = dist/
+ * - ESM: code is in dist/chunk-*.mjs or dist/index.mjs, __dirname = dist/
  * Templates are copied to dist/templates/
  */
 function getTemplatesDir(): string {
-  // __dirname points to dist/ after bundling
-  return path.join(__dirname, 'templates')
+  // Check if __dirname is defined (CJS or bundled code)
+  if (typeof __dirname !== 'undefined') {
+    return path.join(__dirname, 'templates')
+  }
+
+  // ESM fallback: use import.meta.url
+  // import.meta is only available in ESM
+  const currentFile = fileURLToPath(import.meta.url)
+  return path.join(path.dirname(currentFile), 'templates')
 }
 
 /**
