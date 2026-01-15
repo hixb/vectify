@@ -1,0 +1,189 @@
+import path from 'node:path'
+import process from 'node:process'
+import chalk from 'chalk'
+import inquirer from 'inquirer'
+import ora from 'ora'
+import { fileExists, writeFile } from '../utils/helpers'
+
+export interface InitOptions {
+  force?: boolean
+  config?: string
+}
+
+/**
+ * Initialize configuration file
+ */
+export async function init(options: InitOptions = {}): Promise<void> {
+  const spinner = ora('Initializing configuration...').start()
+
+  try {
+    // Ask for config path first
+    const pathAnswers = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'configPath',
+        message: 'Where should we create the config file?',
+        default: options.config || './svg-icon.config.ts',
+        validate: (input: string) => {
+          if (!input.endsWith('.ts') && !input.endsWith('.js')) {
+            return 'Config file must have .ts or .js extension'
+          }
+          return true
+        },
+      },
+    ])
+
+    const configPath = path.resolve(process.cwd(), pathAnswers.configPath)
+    const configDir = path.dirname(configPath)
+
+    // Check if config already exists
+    if (!options.force && await fileExists(configPath)) {
+      spinner.fail('Config file already exists')
+      const { overwrite } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'overwrite',
+          message: 'Config file already exists. Overwrite?',
+          default: false,
+        },
+      ])
+
+      if (!overwrite) {
+        console.log(chalk.yellow('Cancelled'))
+        return
+      }
+    }
+
+    spinner.stop()
+
+    // Ask configuration questions
+    const answers = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'framework',
+        message: 'Which framework are you using?',
+        choices: [
+          { name: 'React', value: 'react' },
+          { name: 'Vue 3', value: 'vue' },
+          { name: 'Svelte', value: 'svelte' },
+        ],
+      },
+      {
+        type: 'input',
+        name: 'input',
+        message: 'Where are your SVG files located?',
+        default: './icons',
+      },
+      {
+        type: 'input',
+        name: 'output',
+        message: 'Where should we output the components?',
+        default: './src/icons',
+      },
+      {
+        type: 'confirm',
+        name: 'typescript',
+        message: 'Use TypeScript?',
+        default: true,
+      },
+      {
+        type: 'confirm',
+        name: 'optimize',
+        message: 'Optimize SVG files with SVGO?',
+        default: true,
+      },
+      {
+        type: 'input',
+        name: 'prefix',
+        message: 'Component name prefix (optional):',
+        default: '',
+      },
+      {
+        type: 'input',
+        name: 'suffix',
+        message: 'Component name suffix (optional):',
+        default: '',
+      },
+    ])
+
+    // Calculate relative path from config directory to project root
+    const relativeConfigDir = path.relative(configDir, process.cwd()) || '.'
+
+    // Generate config content
+    const configContent = generateConfigContent(answers, relativeConfigDir)
+
+    // Write config file
+    spinner.start('Creating config file...')
+    await writeFile(configPath, configContent)
+    spinner.succeed(`Config file created at ${chalk.green(configPath)}`)
+
+    // Show next steps
+    console.log(`\n${chalk.bold('Next steps:')}`)
+    console.log(`  1. Place your SVG files in ${chalk.cyan(answers.input)}`)
+    console.log(`  2. Run ${chalk.cyan('svg-icon generate')} to generate components`)
+    console.log(`  3. Import and use your icons!\n`)
+  }
+  catch (error: any) {
+    spinner.fail('Initialization failed')
+    throw error
+  }
+}
+
+/**
+ * Generate config file content
+ */
+function generateConfigContent(
+  answers: any,
+  configDir: string,
+): string {
+  return `import { defineConfig } from 'vectify'
+
+export default defineConfig({
+  framework: '${answers.framework}',
+  configDir: '${configDir}',
+  input: '${answers.input}',
+  output: '${answers.output}',
+  typescript: ${answers.typescript},
+  optimize: ${answers.optimize},
+  prefix: '${answers.prefix}',
+  suffix: '${answers.suffix}',
+
+  // SVGO configuration (optional)
+  // svgoConfig: {
+  //   plugins: [
+  //     'preset-default',
+  //     'removeViewBox',
+  //     'convertShapeToPath'
+  //   ]
+  // },
+
+  // Generation options
+  generateOptions: {
+    index: true,
+    types: true,
+  },
+
+  // Watch mode settings
+  watch: {
+    enabled: false,
+    ignore: ['**/node_modules/**', '**/.git/**'],
+    debounce: 300,
+  },
+
+  // Lifecycle hooks (optional)
+  // hooks: {
+  //   beforeParse: async (svg, fileName) => {
+  //     // Modify SVG before parsing
+  //     return svg
+  //   },
+  //   afterGenerate: async (code, iconName) => {
+  //     // Modify generated code
+  //     return code
+  //   },
+  //   onComplete: async (stats) => {
+  //     console.log(\`Generated \${stats.success} icons\`)
+  //   }
+  // }
+})
+`
+}
