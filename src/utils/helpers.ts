@@ -138,3 +138,25 @@ export async function getSvgFiles(dirPath: string): Promise<string[]> {
     return []
   }
 }
+
+/**
+ * Find project root directory by looking for package.json
+ */
+export async function findProjectRoot(startDir: string = process.cwd()): Promise<string> {
+  const path = await import('node:path')
+  let currentDir = startDir
+
+  while (true) {
+    const packageJsonPath = path.join(currentDir, 'package.json')
+    if (await fileExists(packageJsonPath)) {
+      return currentDir
+    }
+
+    const parentDir = path.dirname(currentDir)
+    // Reached root directory
+    if (parentDir === currentDir) {
+      return startDir
+    }
+    currentDir = parentDir
+  }
+}

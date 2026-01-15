@@ -13,10 +13,23 @@ export interface TemplateData {
 }
 
 /**
+ * Get the templates directory path
+ * When bundled by tsup:
+ * - CJS: code is in dist/index.js, __dirname = dist/
+ * - ESM: code is in dist/chunk-*.mjs, __dirname = dist/
+ * Templates are copied to dist/templates/
+ */
+function getTemplatesDir(): string {
+  // __dirname points to dist/ after bundling
+  return path.join(__dirname, 'templates')
+}
+
+/**
  * Load and compile a Handlebars template
  */
 function loadTemplate(templatePath: string): HandlebarsTemplateDelegate {
-  const fullPath = path.join(__dirname, templatePath)
+  const templatesDir = getTemplatesDir()
+  const fullPath = path.join(templatesDir, templatePath)
   const templateContent = fs.readFileSync(fullPath, 'utf-8')
   return Handlebars.compile(templateContent, { noEscape: true })
 }

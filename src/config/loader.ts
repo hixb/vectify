@@ -40,17 +40,22 @@ export async function loadConfig(configPath: string): Promise<IconForgeConfig> {
     interopDefault: true,
   })
 
-  let config: IconForgeConfig | IconForgeConfig[]
+  let config: any
 
   try {
-    config = await jiti.import(absolutePath) as IconForgeConfig | IconForgeConfig[]
+    config = await jiti.import(absolutePath)
   }
   catch (error: any) {
     throw new Error(`Failed to load config from ${configPath}: ${error.message}`)
   }
 
-  // Handle array configs (e.g., from defineConfig)
-  const loadedConfig = Array.isArray(config) ? config[0] : config
+  // Handle ES module default export
+  let loadedConfig = config.default || config
+
+  // Handle array configs
+  if (Array.isArray(loadedConfig)) {
+    loadedConfig = loadedConfig[0]
+  }
 
   // Merge with defaults
   const mergedConfig = {

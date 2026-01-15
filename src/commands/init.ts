@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import inquirer from 'inquirer'
 import ora from 'ora'
 import { frameworkRegistry } from '../generators/framework-strategy'
-import { fileExists, writeFile } from '../utils/helpers'
+import { ensureDir, fileExists, findProjectRoot, writeFile } from '../utils/helpers'
 
 export interface InitOptions {
   force?: boolean
@@ -15,16 +15,24 @@ export interface InitOptions {
  * Initialize configuration file
  */
 export async function init(options: InitOptions = {}): Promise<void> {
-  const spinner = ora('Initializing configuration...').start()
-
   try {
+    // Find project root directory
+    const projectRoot = await findProjectRoot()
+    const currentDir = process.cwd()
+
+    // Show warning if not in project root
+    if (currentDir !== projectRoot) {
+      console.log(chalk.yellow(`\nNote: Project root detected at ${chalk.cyan(projectRoot)}`))
+      console.log(chalk.yellow(`Current directory: ${chalk.cyan(currentDir)}\n`))
+    }
+
     // Ask for config path first
     const pathAnswers = await inquirer.prompt([
       {
         type: 'input',
         name: 'configPath',
         message: 'Where should we create the config file?',
-        default: options.config || './svg-icon.config.ts',
+        default: options.config || './vectify.config.ts',
         validate: (input: string) => {
           if (!input.endsWith('.ts') && !input.endsWith('.js')) {
             return 'Config file must have .ts or .js extension'
@@ -34,12 +42,11 @@ export async function init(options: InitOptions = {}): Promise<void> {
       },
     ])
 
-    const configPath = path.resolve(process.cwd(), pathAnswers.configPath)
+    const configPath = path.resolve(projectRoot, pathAnswers.configPath)
     const configDir = path.dirname(configPath)
 
     // Check if config already exists
     if (!options.force && await fileExists(configPath)) {
-      spinner.fail('Config file already exists')
       const { overwrite } = await inquirer.prompt([
         {
           type: 'confirm',
@@ -54,8 +61,6 @@ export async function init(options: InitOptions = {}): Promise<void> {
         return
       }
     }
-
-    spinner.stop()
 
     // Get supported frameworks dynamically
     const supportedFrameworks = frameworkRegistry.getSupportedFrameworks()
@@ -110,8 +115,18 @@ export async function init(options: InitOptions = {}): Promise<void> {
       },
     ])
 
+    // Create input and output directories if they don't exist
+    const inputPath = path.resolve(projectRoot, answers.input)
+    const outputPath = path.resolve(projectRoot, answers.output)
+
+    const spinner = ora('Setting up directories...').start()
+    await ensureDir(inputPath)
+    spinner.text = `Created input directory: ${chalk.cyan(answers.input)}`
+    await ensureDir(outputPath)
+    spinner.succeed(`Created output directory: ${chalk.cyan(answers.output)}`)
+
     // Calculate relative path from config directory to project root
-    const relativeConfigDir = path.relative(configDir, process.cwd()) || '.'
+    const relativeConfigDir = path.relative(configDir, projectRoot) || '.'
 
     // Generate config content
     const configContent = generateConfigContent(answers, relativeConfigDir)
@@ -128,7 +143,7 @@ export async function init(options: InitOptions = {}): Promise<void> {
     console.log(`  3. Import and use your icons!\n`)
   }
   catch (error: any) {
-    spinner.fail('Initialization failed')
+    console.error(chalk.red('Initialization failed'))
     throw error
   }
 }
