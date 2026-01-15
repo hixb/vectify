@@ -64,11 +64,11 @@
   stroke-width={strokeWidth}
   stroke-linecap="round"
   stroke-linejoin="round"
-  class={mergedClass}
   aria-hidden={shouldHide}
   aria-label={ariaLabel || undefined}
   role={title || ariaLabel ? 'img' : undefined}
   {...$$restProps}
+  class={mergedClass}
 >
   {#if title}
     <title>{title}</title>

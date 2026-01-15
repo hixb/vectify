@@ -14,8 +14,9 @@ export function createIcon(name, iconNode, keepColors = false) {
     // Determine if icon should be hidden from screen readers
     const shouldHide = ariaHidden !== undefined ? ariaHidden : (!title && !ariaLabel)
 
-    // Merge className with default icon class
-    const mergedClassName = className ? `vectify-icon ${className}` : 'vectify-icon'
+    const { className: propsClassName, ...restProps } = props
+    const allClassNames = [className, propsClassName].filter(Boolean).join(' ')
+    const mergedClassName = allClassNames ? `vectify-icon ${allClassNames}` : 'vectify-icon'
 
     return (
       <svg
@@ -28,11 +29,11 @@ export function createIcon(name, iconNode, keepColors = false) {
         strokeWidth={keepColors ? undefined : strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={mergedClassName}
         aria-hidden={shouldHide}
         aria-label={ariaLabel}
         role={title || ariaLabel ? 'img' : undefined}
-        {...props}
+        {...restProps}
+        className={mergedClassName}
       >
         {title && <title>{title}</title>}
         {renderIconNode(iconNode)}

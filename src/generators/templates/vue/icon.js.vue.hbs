@@ -8,11 +8,11 @@
     :stroke-width="strokeWidth"
     stroke-linecap="round"
     stroke-linejoin="round"
-    :class="mergedClass"
     :aria-hidden="shouldHide"
     :aria-label="ariaLabel"
     :role="title || ariaLabel ? 'img' : undefined"
     v-bind="$attrs"
+    :class="mergedClass"
   >
     <title v-if="title">{{ title }}</title>
     <component
