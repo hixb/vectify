@@ -31,6 +31,11 @@ export async function generateIcons(config: IconForgeConfig, dryRun = false): Pr
       return stats
     }
 
+    // Clean output directory if enabled
+    if (config.generateOptions?.cleanOutput && !dryRun) {
+      await cleanOutputDirectory(svgFiles, config)
+    }
+
     // Generate base component (Icon/createIcon)
     await generateBaseComponent(config, dryRun)
 
@@ -203,8 +208,7 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
   // Read all SVG files content
   const svgContents = await Promise.all(
     svgFiles.map(async (svgFile) => {
-      const content = await readFile(svgFile)
-      return content
+      return await readFile(svgFile)
     }),
   )
 
@@ -273,7 +277,7 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
       const grid = document.getElementById('iconGrid');
       grid.innerHTML = '';
 
-      const filteredIcons = icons.filter((name, index) =>
+      const filteredIcons = icons.filter((name) =>
         name.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
@@ -370,4 +374,62 @@ async function generatePreviewHtml(svgFiles: string[], config: IconForgeConfig):
 
   const previewPath = path.join(config.output, 'preview.html')
   await writeFile(previewPath, html)
+}
+
+/**
+ * Clean output directory by removing components without corresponding SVG files
+ */
+async function cleanOutputDirectory(svgFiles: string[], config: IconForgeConfig): Promise<void> {
+  const { readdir, unlink } = await import('node:fs/promises')
+  const strategy = getFrameworkStrategy(config.framework)
+  const fileExt = strategy.getComponentExtension(config.typescript ?? true)
+
+  // Get expected component names from SVG files
+  const expectedComponents = new Set(
+    svgFiles.map((svgFile) => {
+      const fileName = path.basename(svgFile, '.svg')
+      const componentName = getComponentName(
+        fileName,
+        config.prefix,
+        config.suffix,
+        config.transform,
+      )
+      return `${componentName}.${fileExt}`
+    }),
+  )
+
+  // Protected files that should never be deleted
+  const protectedFiles = new Set([
+    `Icon.${fileExt}`,
+    `createIcon.${fileExt}`,
+    `index.${config.typescript ? 'ts' : 'js'}`,
+    `index.d.ts`,
+    'preview.html',
+  ])
+
+  try {
+    const files = await readdir(config.output)
+
+    for (const file of files) {
+      // Skip protected files
+      if (protectedFiles.has(file)) {
+        continue
+      }
+
+      // Skip files that don't match the component extension
+      if (!file.endsWith(`.${fileExt}`)) {
+        continue
+      }
+
+      // Delete if not in expected components
+      if (!expectedComponents.has(file)) {
+        const filePath = path.join(config.output, file)
+        await unlink(filePath)
+        console.log(`Deleted orphaned component: ${file}`)
+      }
+    }
+  }
+  catch (error: any) {
+    console.warn(`Failed to clean output directory: ${error.message}`)
+  }
 }

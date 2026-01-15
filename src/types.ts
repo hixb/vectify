@@ -142,6 +142,13 @@ export interface IconForgeConfig {
      * @default false
      */
     preview?: boolean
+
+    /**
+     * Clean output directory before generating
+     * Removes icon components that no longer have corresponding SVG files
+     * @default false
+     */
+    cleanOutput?: boolean
   }
 
   /**

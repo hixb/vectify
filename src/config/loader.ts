@@ -20,6 +20,7 @@ const DEFAULT_CONFIG: Partial<IconForgeConfig> = {
     index: true,
     types: true,
     preview: false,
+    cleanOutput: false,
   },
   watch: {
     enabled: false,

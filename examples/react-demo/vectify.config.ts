@@ -24,6 +24,7 @@ export default defineConfig({
     index: true,
     types: true,
     preview: true,
+    cleanOutput: false,
   },
 
   // Watch mode settings
