@@ -6,4 +6,5 @@ export const iconNode: IconNode[] = [
   ['path', { stroke: '#FFF', strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 1.5, d: 'M21 16.423v1.828m-6.254-1.532v1.237m1.973-1.236v1.236m-2.242 1.92h3.046c1.056 0 1.716-.591 1.716-1.678v-1.69c0-1.104-.66-1.708-1.716-1.708H14.48c-1.06 0-1.716.595-1.716 1.68v1.718c-.003 1.087.654 1.677 1.713 1.677' }],
 ]
 
-export const AirpodsFullBattery = createIcon('AirpodsFullBattery', iconNode, false)
+const AirpodsFullBattery = createIcon('AirpodsFullBattery', iconNode, false)
+export default AirpodsFullBattery

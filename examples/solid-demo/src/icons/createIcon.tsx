@@ -1,12 +1,13 @@
-import { JSX, splitProps, createMemo } from 'solid-js'
+import type { JSX } from 'solid-js'
 import type { IconNode } from 'vectify'
+import { splitProps } from 'solid-js'
 
 export interface CreateIconProps {
-  size?: number | string
-  color?: string
-  strokeWidth?: number | string
-  class?: string
-  title?: string
+  'size'?: number | string
+  'color'?: string
+  'strokeWidth'?: number | string
+  'class'?: string
+  'title'?: string
   'aria-label'?: string
   'aria-hidden'?: boolean | 'true' | 'false'
   [key: string]: any
@@ -21,7 +22,7 @@ export function createIcon(name: string, iconNode: IconNode[], keepColors = fals
       'class',
       'title',
       'aria-label',
-      'aria-hidden'
+      'aria-hidden',
     ])
 
     const size = () => local.size ?? 24
@@ -42,7 +43,8 @@ export function createIcon(name: string, iconNode: IconNode[], keepColors = fals
 
       if (keepColors) {
         cleanedAttrs = attrs
-      } else {
+      }
+      else {
         // Track color attributes to determine icon type
         let hasFill = false
         let hasStroke = false
@@ -63,14 +65,15 @@ export function createIcon(name: string, iconNode: IconNode[], keepColors = fals
         // Keep non-color attributes
         cleanedAttrs = Object.fromEntries(
           Object.entries(attrs).filter(([key]) =>
-            !['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key)
-          )
+            !['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key),
+          ),
         )
 
         // Apply color based on original attributes
         if (hasFill) {
           cleanedAttrs.fill = color()
-        } else if (hasStroke) {
+        }
+        else if (hasStroke) {
           cleanedAttrs.fill = 'none'
           cleanedAttrs.stroke = color()
           cleanedAttrs.strokeWidth = originalStrokeWidth ?? strokeWidth()

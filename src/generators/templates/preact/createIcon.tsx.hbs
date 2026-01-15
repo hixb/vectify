@@ -1,33 +1,37 @@
-import { createElement, forwardRef } from 'preact'
+import { createElement } from 'preact'
 import type { IconNode, IconProps } from 'vectify'
-import type { ReactNode, SVGProps } from 'preact'
+import type { JSX } from 'preact'
 
-export interface CreateIconProps extends IconProps, Omit<SVGProps<SVGSVGElement>, keyof IconProps> {
+export interface CreateIconProps extends IconProps {
   size?: number | string
   color?: string
   strokeWidth?: number | string
+  class?: string
   className?: string
   title?: string
   'aria-label'?: string
   'aria-hidden'?: boolean | 'true' | 'false'
+  ref?: any
+  [key: string]: any
 }
 
 export function createIcon(name: string, iconNode: IconNode[], keepColors = false) {
-  const Icon = forwardRef<SVGSVGElement, CreateIconProps>(({
+  const Icon = ({
     size = 24,
     color = 'currentColor',
     strokeWidth = 2,
+    class: classAttr,
     className,
     title,
     'aria-label': ariaLabel,
     'aria-hidden': ariaHidden,
+    ref,
     ...props
-  }, ref) => {
+  }: CreateIconProps) => {
     // Determine if icon should be hidden from screen readers
     const shouldHide = ariaHidden !== undefined ? ariaHidden : (!title && !ariaLabel)
 
-    const { className: propsClassName, ...restProps } = props as any
-    const allClassNames = [className, propsClassName].filter(Boolean).join(' ')
+    const allClassNames = [classAttr, className].filter(Boolean).join(' ')
     const mergedClassName = allClassNames ? `vectify-icon ${allClassNames}` : 'vectify-icon'
 
     return (
@@ -39,14 +43,14 @@ export function createIcon(name: string, iconNode: IconNode[], keepColors = fals
         aria-hidden={shouldHide}
         aria-label={ariaLabel}
         role={title || ariaLabel ? 'img' : undefined}
-        {...restProps}
-        className={mergedClassName}
+        {...props}
+        class={mergedClassName}
       >
         {title && <title>{title}</title>}
         {renderIconNode(iconNode, keepColors, color, strokeWidth)}
       </svg>
     )
-  })
+  }
 
   Icon.displayName = name
   return Icon
@@ -57,7 +61,7 @@ function renderIconNode(
   keepColors: boolean,
   color: string,
   strokeWidth: number | string
-): ReactNode {
+): JSX.Element[] {
   return nodes.map((node, index) => {
     const [type, attrs, children] = node
 
