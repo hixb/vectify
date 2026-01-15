@@ -167,8 +167,8 @@ async function generateIndexFile(svgFiles: string[], config: IconForgeConfig, dr
   const strategy = getFrameworkStrategy(config.framework)
   const ext = strategy.getIndexExtension(typescript)
 
-  // Vue and Svelte use default exports, other frameworks use named exports
-  const usesDefaultExport = config.framework === 'vue' || config.framework === 'svelte'
+  // Vue, Svelte, and Preact use default exports, other frameworks use named exports
+  const usesDefaultExport = config.framework === 'vue' || config.framework === 'svelte' || config.framework === 'preact'
 
   const exports = svgFiles
     .map((svgFile) => {

@@ -1,1 +1,1 @@
-export { AirpodsFullBattery } from './AirpodsFullBattery'
+export { default as AirpodsFullBattery } from './AirpodsFullBattery'
