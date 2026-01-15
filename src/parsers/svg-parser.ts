@@ -1,4 +1,6 @@
+import type { AnyNode } from 'domhandler'
 import type { IconNode, SVGElementType } from '../types'
+import * as cheerio from 'cheerio'
 
 /**
  * Supported SVG elements
@@ -15,118 +17,92 @@ const SUPPORTED_ELEMENTS: SVGElementType[] = [
 ]
 
 /**
- * Parse SVG string to IconNode array
+ * Parse SVG string to IconNode array using Cheerio (proper XML parser)
  */
 export function parseSvg(svgContent: string): IconNode[] {
-  // Simple regex-based parser for SVG elements
-  const iconNodes: IconNode[] = []
+  // Load SVG with Cheerio (XML mode for proper SVG parsing)
+  const $ = cheerio.load(svgContent, {
+    xml: true,
+  })
 
-  // Extract SVG body (content between <svg> tags)
-  const svgMatch = svgContent.match(/<svg[^>]*>([\s\S]*?)<\/svg>/i)
-  if (!svgMatch) {
+  const svgElement = $('svg')
+  if (svgElement.length === 0) {
     throw new Error('Invalid SVG: No <svg> tag found')
   }
 
-  const svgBody = svgMatch[1]
-
-  // Parse each supported element
-  for (const elementType of SUPPORTED_ELEMENTS) {
-    // Match self-closing tags: <path ... />
-    const selfClosingRegex = new RegExp(`<${elementType}([^>]*?)\\s*\\/?>`, 'gi')
-    let match: RegExpExecArray | null
-
-    match = selfClosingRegex.exec(svgBody)
-    while (match !== null) {
-      const attrsString = match[1]
-      const attrs = parseAttributes(attrsString)
-
-      if (Object.keys(attrs).length > 0) {
-        iconNodes.push([elementType, attrs])
-      }
-
-      match = selfClosingRegex.exec(svgBody)
+  // Parse all children of the SVG element
+  const iconNodes: IconNode[] = []
+  svgElement.children().each((_, element) => {
+    const node = parseElement($, element)
+    if (node) {
+      iconNodes.push(node)
     }
-
-    // Match opening/closing tags: <g ...>...</g>
-    const wrappedRegex = new RegExp(`<${elementType}([^>]*?)>(.*?)<\\/${elementType}>`, 'gis')
-
-    match = wrappedRegex.exec(svgBody)
-    while (match !== null) {
-      const attrsString = match[1]
-      const innerContent = match[2]
-      const attrs = parseAttributes(attrsString)
-
-      // Parse children recursively
-      const children = innerContent ? parseSvgContent(innerContent) : undefined
-
-      if (Object.keys(attrs).length > 0 || children) {
-        iconNodes.push([elementType, attrs, children])
-      }
-
-      match = wrappedRegex.exec(svgBody)
-    }
-  }
+  })
 
   return iconNodes
 }
 
 /**
- * Parse SVG content (for nested elements)
+ * Parse a single element and its children
  */
-function parseSvgContent(content: string): IconNode[] {
-  const nodes: IconNode[] = []
-
-  for (const elementType of SUPPORTED_ELEMENTS) {
-    const selfClosingRegex = new RegExp(`<${elementType}([^>]*?)\\s*\\/?>`, 'gi')
-    let match: RegExpExecArray | null
-
-    match = selfClosingRegex.exec(content)
-    while (match !== null) {
-      const attrsString = match[1]
-      const attrs = parseAttributes(attrsString)
-
-      if (Object.keys(attrs).length > 0) {
-        nodes.push([elementType, attrs])
-      }
-
-      match = selfClosingRegex.exec(content)
-    }
-
-    const wrappedRegex = new RegExp(`<${elementType}([^>]*?)>(.*?)<\\/${elementType}>`, 'gis')
-
-    match = wrappedRegex.exec(content)
-    while (match !== null) {
-      const attrsString = match[1]
-      const innerContent = match[2]
-      const attrs = parseAttributes(attrsString)
-
-      const children = innerContent ? parseSvgContent(innerContent) : undefined
-
-      if (Object.keys(attrs).length > 0 || children) {
-        nodes.push([elementType, attrs, children])
-      }
-
-      match = wrappedRegex.exec(content)
-    }
+function parseElement($: cheerio.CheerioAPI, element: AnyNode): IconNode | null {
+  // Check if element is an Element node
+  if (element.type !== 'tag') {
+    return null
   }
 
-  return nodes
+  const tagName = element.name as SVGElementType
+
+  // Only parse supported SVG elements
+  if (!SUPPORTED_ELEMENTS.includes(tagName)) {
+    return null
+  }
+
+  // Parse attributes
+  const attrs = parseAttributes(element)
+
+  // Parse children recursively
+  const $element = $(element)
+  const children: IconNode[] = []
+
+  $element.children().each((_, child) => {
+    const childNode = parseElement($, child)
+    if (childNode) {
+      children.push(childNode)
+    }
+  })
+
+  // Return node with or without children
+  if (children.length > 0) {
+    return [tagName, attrs, children]
+  }
+
+  return [tagName, attrs]
 }
 
 /**
- * Parse attributes from element string
+ * Parse attributes from an element
  */
-function parseAttributes(attrsString: string): Record<string, string | number> {
+function parseAttributes(element: AnyNode): Record<string, string | number> {
   const attrs: Record<string, string | number> = {}
 
-  // Match key="value" or key='value'
-  const attrRegex = /(\w+(?:-\w+)*)=["']([^"']*)["']/g
-  let match: RegExpExecArray | null
+  // Check if element has attribs
+  if (element.type !== 'tag' || !element.attribs) {
+    return attrs
+  }
 
-  match = attrRegex.exec(attrsString)
-  while (match !== null) {
-    const key = match[1]
-    const value = match[2]
+  const attributes = element.attribs
+
+  for (const [key, value] of Object.entries(attributes)) {
+    // Skip xmlns and other namespace attributes
+    if (key.startsWith('xmlns')) {
+      continue
+    }
+
+    // Ensure value is a string
+    if (typeof value !== 'string') {
+      continue
+    }
 
     // Convert to camelCase for React compatibility
     const camelKey = key.replace(/-([a-z])/g, (_, char) => char.toUpperCase())
@@ -134,8 +110,6 @@ function parseAttributes(attrsString: string): Record<string, string | number> {
     // Try to parse as number if possible
     const numValue = Number.parseFloat(value)
     attrs[camelKey] = Number.isNaN(numValue) ? value : numValue
-
-    match = attrRegex.exec(attrsString)
   }
 
   return attrs
