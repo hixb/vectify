@@ -1,0 +1,99 @@
+import { LitElement, html, css, svg } from 'lit'
+import { property } from 'lit/decorators.js'
+import type { IconNode } from 'vectify'
+
+export interface IconOptions {
+  size?: number | string
+  color?: string
+  strokeWidth?: number | string
+  title?: string
+  ariaLabel?: string
+  ariaHidden?: boolean
+}
+
+export abstract class IconBase extends LitElement {
+  @property({ type: Number }) size = 24
+  @property({ type: String }) color = 'currentColor'
+  @property({ type: Number }) strokeWidth = 2
+  @property({ type: String }) title = ''
+  @property({ type: String }) ariaLabel = ''
+  @property({ type: Boolean }) ariaHidden = false
+
+  abstract iconNode: IconNode[]
+  abstract keepColors: boolean
+
+  static styles = css`
+    :host {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  `
+
+  private renderNode(node: IconNode): any {
+    const [type, attrs, children] = node
+    let cleanedAttrs: Record<string, any>
+
+    if (this.keepColors) {
+      cleanedAttrs = attrs
+    } else {
+      // Track color attributes
+      let hasFill = false
+      let hasStroke = false
+      let originalStrokeWidth: number | string | undefined
+
+      if (attrs.fill && attrs.fill !== 'none') {
+        hasFill = true
+      }
+      if (attrs.stroke) {
+        hasStroke = true
+      }
+      if (attrs.strokeWidth || attrs['stroke-width']) {
+        originalStrokeWidth = attrs.strokeWidth || attrs['stroke-width']
+      }
+
+      // Keep non-color attributes
+      cleanedAttrs = Object.fromEntries(
+        Object.entries(attrs).filter(([key]) =>
+          !['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key)
+        )
+      )
+
+      // Apply color
+      if (hasFill) {
+        cleanedAttrs.fill = this.color
+      } else if (hasStroke) {
+        cleanedAttrs.fill = 'none'
+        cleanedAttrs.stroke = this.color
+        cleanedAttrs['stroke-width'] = originalStrokeWidth ?? this.strokeWidth
+        cleanedAttrs['stroke-linecap'] = 'round'
+        cleanedAttrs['stroke-linejoin'] = 'round'
+      }
+    }
+
+    const childNodes = children && children.length > 0
+      ? children.map(child => this.renderNode(child))
+      : []
+
+    return svg`<${type} ...${cleanedAttrs}>${childNodes}</${type}>`
+  }
+
+  render() {
+    const shouldHide = this.ariaHidden !== undefined ? this.ariaHidden : (!this.title && !this.ariaLabel)
+
+    return html`
+      <svg
+        width="${this.size}"
+        height="${this.size}"
+        viewBox="0 0 24 24"
+        class="vectify-icon"
+        aria-hidden="${shouldHide}"
+        aria-label="${this.ariaLabel || undefined}"
+        role="${this.title || this.ariaLabel ? 'img' : undefined}"
+      >
+        ${this.title ? svg`<title>${this.title}</title>` : ''}
+        ${this.iconNode.map(node => this.renderNode(node))}
+      </svg>
+    `
+  }
+}

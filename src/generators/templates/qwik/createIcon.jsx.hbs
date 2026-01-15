@@ -1,76 +1,57 @@
-import type { ReactNode, SVGProps } from 'react'
-import type { IconNode, IconProps } from 'vectify'
-import { createElement, forwardRef } from 'react'
+import { component$ } from '@builder.io/qwik'
 
-export interface CreateIconProps extends IconProps, Omit<SVGProps<SVGSVGElement>, keyof IconProps> {
-  'size'?: number | string
-  'color'?: string
-  'strokeWidth'?: number | string
-  'className'?: string
-  'title'?: string
-  'aria-label'?: string
-  'aria-hidden'?: boolean | 'true' | 'false'
-}
-
-export function createIcon(name: string, iconNode: IconNode[], keepColors = false) {
-  const Icon = forwardRef<SVGSVGElement, CreateIconProps>(({
+export function createIcon(name, iconNode, keepColors = false) {
+  return component$(({
     size = 24,
     color = 'currentColor',
     strokeWidth = 2,
-    className,
+    class: className,
     title,
     'aria-label': ariaLabel,
     'aria-hidden': ariaHidden,
     ...props
-  }, ref) => {
+  }) => {
     // Determine if icon should be hidden from screen readers
     const shouldHide = ariaHidden !== undefined ? ariaHidden : (!title && !ariaLabel)
 
-    const { className: propsClassName, ...restProps } = props as any
-    const allClassNames = [className, propsClassName].filter(Boolean).join(' ')
-    const mergedClassName = allClassNames ? `vectify-icon ${allClassNames}` : 'vectify-icon'
+    const mergedClassName = className ? `vectify-icon ${className}` : 'vectify-icon'
 
     return (
       <svg
-        ref={ref}
         width={size}
         height={size}
         viewBox="0 0 24 24"
         aria-hidden={shouldHide}
         aria-label={ariaLabel}
         role={title || ariaLabel ? 'img' : undefined}
-        {...restProps}
-        className={mergedClassName}
+        {...props}
+        class={mergedClassName}
       >
         {title && <title>{title}</title>}
         {renderIconNode(iconNode, keepColors, color, strokeWidth)}
       </svg>
     )
   })
-
-  Icon.displayName = name
-  return Icon
 }
 
 function renderIconNode(
-  nodes: IconNode[],
-  keepColors: boolean,
-  color: string,
-  strokeWidth: number | string,
-): ReactNode {
+  nodes,
+  keepColors,
+  color,
+  strokeWidth
+) {
   return nodes.map((node, index) => {
     const [type, attrs, children] = node
 
-    let cleanedAttrs: Record<string, any>
+    let cleanedAttrs
 
     if (keepColors) {
       cleanedAttrs = attrs
-    }
-    else {
+    } else {
       // Track color attributes to determine icon type
       let hasFill = false
       let hasStroke = false
-      let originalStrokeWidth: number | string | undefined
+      let originalStrokeWidth
 
       Object.entries(attrs).forEach(([key, value]) => {
         if (key === 'fill' && value !== 'none') {
@@ -87,15 +68,14 @@ function renderIconNode(
       // Keep non-color attributes
       cleanedAttrs = Object.fromEntries(
         Object.entries(attrs).filter(([key]) =>
-          !['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key),
-        ),
+          !['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key)
+        )
       )
 
       // Apply color based on original attributes
       if (hasFill) {
         cleanedAttrs.fill = color
-      }
-      else if (hasStroke) {
+      } else if (hasStroke) {
         cleanedAttrs.fill = 'none'
         cleanedAttrs.stroke = color
         cleanedAttrs.strokeWidth = originalStrokeWidth ?? strokeWidth
@@ -105,15 +85,16 @@ function renderIconNode(
     }
 
     const props = { key: index, ...cleanedAttrs }
+    const Element = type
 
     if (children && children.length > 0) {
-      return createElement(
-        type,
-        props,
-        renderIconNode(children, keepColors, color, strokeWidth),
+      return (
+        <Element {...props}>
+          {renderIconNode(children, keepColors, color, strokeWidth)}
+        </Element>
       )
     }
 
-    return createElement(type, props)
+    return <Element {...props} />
   })
 }

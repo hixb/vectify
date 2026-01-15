@@ -73,3 +73,35 @@ export function getSvelteTemplatePath(typescript: boolean, type: 'component' | '
   const suffix = typescript ? 'ts' : 'js'
   return `svelte/${type}.${suffix}.svelte.hbs`
 }
+
+/**
+ * Get template path for Solid components
+ */
+export function getSolidTemplatePath(typescript: boolean, type: 'component' | 'createIcon'): string {
+  const ext = typescript ? 'tsx' : 'jsx'
+  return `solid/${type}.${ext}.hbs`
+}
+
+/**
+ * Get template path for Preact components
+ */
+export function getPreactTemplatePath(typescript: boolean, type: 'component' | 'createIcon'): string {
+  const ext = typescript ? 'tsx' : 'jsx'
+  return `preact/${type}.${ext}.hbs`
+}
+
+/**
+ * Get template path for Vanilla JS components
+ */
+export function getVanillaTemplatePath(typescript: boolean, type: 'component' | 'createIcon'): string {
+  const ext = typescript ? 'ts' : 'js'
+  return `vanilla/${type}.${ext}.hbs`
+}
+
+/**
+ * Get template path for Qwik components
+ */
+export function getQwikTemplatePath(typescript: boolean, type: 'component' | 'createIcon'): string {
+  const ext = typescript ? 'tsx' : 'jsx'
+  return `qwik/${type}.${ext}.hbs`
+}

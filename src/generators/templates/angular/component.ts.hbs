@@ -1,0 +1,121 @@
+import { Component, Input } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import type { IconNode } from 'vectify'
+
+const iconNode: IconNode[] = [
+{{{formattedNodes}}}
+]
+
+@Component({
+  selector: '{{componentName}}',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <svg
+      [attr.width]="size"
+      [attr.height]="size"
+      viewBox="0 0 24 24"
+      [attr.aria-hidden]="shouldHide"
+      [attr.aria-label]="ariaLabel"
+      [attr.role]="title || ariaLabel ? 'img' : null"
+      [attr.class]="mergedClassName"
+    >
+      <title *ngIf="title">{{ title }}</title>
+      <ng-container *ngFor="let node of processedNodes">
+        <ng-container [ngSwitch]="node.type">
+          <path *ngSwitchCase="'path'" [attr.d]="node.attrs.d" [ngStyle]="node.attrs"></path>
+          <circle *ngSwitchCase="'circle'" [attr.cx]="node.attrs.cx" [attr.cy]="node.attrs.cy" [attr.r]="node.attrs.r" [ngStyle]="node.attrs"></circle>
+          <rect *ngSwitchCase="'rect'" [attr.x]="node.attrs.x" [attr.y]="node.attrs.y" [attr.width]="node.attrs.width" [attr.height]="node.attrs.height" [ngStyle]="node.attrs"></rect>
+          <line *ngSwitchCase="'line'" [attr.x1]="node.attrs.x1" [attr.y1]="node.attrs.y1" [attr.x2]="node.attrs.x2" [attr.y2]="node.attrs.y2" [ngStyle]="node.attrs"></line>
+          <polyline *ngSwitchCase="'polyline'" [attr.points]="node.attrs.points" [ngStyle]="node.attrs"></polyline>
+          <polygon *ngSwitchCase="'polygon'" [attr.points]="node.attrs.points" [ngStyle]="node.attrs"></polygon>
+          <ellipse *ngSwitchCase="'ellipse'" [attr.cx]="node.attrs.cx" [attr.cy]="node.attrs.cy" [attr.rx]="node.attrs.rx" [attr.ry]="node.attrs.ry" [ngStyle]="node.attrs"></ellipse>
+          <g *ngSwitchDefault [ngStyle]="node.attrs">
+            <ng-container *ngFor="let child of node.children">
+              <ng-container [ngSwitch]="child.type">
+                <path *ngSwitchCase="'path'" [attr.d]="child.attrs.d" [ngStyle]="child.attrs"></path>
+                <circle *ngSwitchCase="'circle'" [attr.cx]="child.attrs.cx" [attr.cy]="child.attrs.cy" [attr.r]="child.attrs.r" [ngStyle]="child.attrs"></circle>
+                <rect *ngSwitchCase="'rect'" [attr.x]="child.attrs.x" [attr.y]="child.attrs.y" [attr.width]="child.attrs.width" [attr.height]="child.attrs.height" [ngStyle]="child.attrs"></rect>
+              </ng-container>
+            </ng-container>
+          </g>
+        </ng-container>
+      </ng-container>
+    </svg>
+  `
+})
+export class {{componentName}}Component {
+  @Input() size: number | string = 24
+  @Input() color: string = 'currentColor'
+  @Input() strokeWidth: number | string = 2
+  @Input() className?: string
+  @Input() title?: string
+  @Input() ariaLabel?: string
+  @Input() ariaHidden?: boolean
+
+  private iconNode: IconNode[] = iconNode
+  private keepColors: boolean = {{keepColors}}
+
+  get shouldHide(): boolean {
+    return this.ariaHidden !== undefined ? this.ariaHidden : (!this.title && !this.ariaLabel)
+  }
+
+  get mergedClassName(): string {
+    return this.className ? `vectify-icon ${this.className}` : 'vectify-icon'
+  }
+
+  get processedNodes(): any[] {
+    return this.iconNode.map(node => this.renderNode(node))
+  }
+
+  private renderNode(node: IconNode): any {
+    const [type, attrs, children] = node
+
+    let cleanedAttrs: Record<string, any>
+
+    if (this.keepColors) {
+      cleanedAttrs = attrs
+    } else {
+      // Track color attributes to determine icon type
+      let hasFill = false
+      let hasStroke = false
+      let originalStrokeWidth: number | string | undefined
+
+      Object.entries(attrs).forEach(([key, value]) => {
+        if (key === 'fill' && value !== 'none') {
+          hasFill = true
+        }
+        if (key === 'stroke') {
+          hasStroke = true
+        }
+        if (key === 'strokeWidth' || key === 'stroke-width') {
+          originalStrokeWidth = value
+        }
+      })
+
+      // Keep non-color attributes
+      cleanedAttrs = Object.fromEntries(
+        Object.entries(attrs).filter(([key]) =>
+          !['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key)
+        )
+      )
+
+      // Apply color based on original attributes
+      if (hasFill) {
+        cleanedAttrs.fill = this.color
+      } else if (hasStroke) {
+        cleanedAttrs.fill = 'none'
+        cleanedAttrs.stroke = this.color
+        cleanedAttrs['stroke-width'] = originalStrokeWidth ?? this.strokeWidth
+        cleanedAttrs['stroke-linecap'] = 'round'
+        cleanedAttrs['stroke-linejoin'] = 'round'
+      }
+    }
+
+    return {
+      type,
+      attrs: cleanedAttrs,
+      children: children && children.length > 0 ? children.map(c => this.renderNode(c)) : []
+    }
+  }
+}

@@ -1,0 +1,19 @@
+import { customElement } from 'lit/decorators.js'
+import { IconBase } from './createIcon'
+import type { IconNode } from 'vectify'
+
+export const iconNode: IconNode[] = [
+{{{formattedNodes}}}
+]
+
+@customElement('{{componentName}}')
+export class {{componentName}} extends IconBase {
+  iconNode = iconNode
+  keepColors = {{keepColors}}
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    '{{componentName}}': {{componentName}}
+  }
+}

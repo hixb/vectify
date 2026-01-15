@@ -1,0 +1,98 @@
+import { LitElement, html, css, svg } from 'lit'
+import { property } from 'lit/decorators.js'
+
+export class IconBase extends LitElement {
+  static properties = {
+    size: { type: Number },
+    color: { type: String },
+    strokeWidth: { type: Number },
+    title: { type: String },
+    ariaLabel: { type: String },
+    ariaHidden: { type: Boolean }
+  }
+
+  constructor() {
+    super()
+    this.size = 24
+    this.color = 'currentColor'
+    this.strokeWidth = 2
+    this.title = ''
+    this.ariaLabel = ''
+    this.ariaHidden = false
+  }
+
+  static styles = css`
+    :host {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  `
+
+  renderNode(node) {
+    const [type, attrs, children] = node
+    let cleanedAttrs
+
+    if (this.keepColors) {
+      cleanedAttrs = attrs
+    } else {
+      // Track color attributes
+      let hasFill = false
+      let hasStroke = false
+      let originalStrokeWidth
+
+      if (attrs.fill && attrs.fill !== 'none') {
+        hasFill = true
+      }
+      if (attrs.stroke) {
+        hasStroke = true
+      }
+      if (attrs.strokeWidth || attrs['stroke-width']) {
+        originalStrokeWidth = attrs.strokeWidth || attrs['stroke-width']
+      }
+
+      // Keep non-color attributes
+      cleanedAttrs = Object.fromEntries(
+        Object.entries(attrs).filter(([key]) =>
+          !['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key)
+        )
+      )
+
+      // Apply color
+      if (hasFill) {
+        cleanedAttrs.fill = this.color
+      } else if (hasStroke) {
+        cleanedAttrs.fill = 'none'
+        cleanedAttrs.stroke = this.color
+        cleanedAttrs['stroke-width'] = originalStrokeWidth ?? this.strokeWidth
+        cleanedAttrs['stroke-linecap'] = 'round'
+        cleanedAttrs['stroke-linejoin'] = 'round'
+      }
+    }
+
+    const childNodes = children && children.length > 0
+      ? children.map(child => this.renderNode(child))
+      : []
+
+    return svg`<${type} ...${cleanedAttrs}>${childNodes}</${type}>`
+  }
+
+  render() {
+    const shouldHide = this.ariaHidden !== undefined ? this.ariaHidden : (!this.title && !this.ariaLabel)
+
+    return html`
+      <svg
+        width="${this.size}"
+        height="${this.size}"
+        viewBox="0 0 24 24"
+        class="vectify-icon"
+        aria-hidden="${shouldHide}"
+        aria-label="${this.ariaLabel || undefined}"
+        role="${this.title || this.ariaLabel ? 'img' : undefined}"
+      >
+        ${this.title ? svg`<title>${this.title}</title>` : ''}
+        ${this.iconNode.map(node => this.renderNode(node))}
+      </svg>
+    `
+  }
+}

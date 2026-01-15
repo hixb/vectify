@@ -1,6 +1,11 @@
 import type { Framework, IconNode } from '../types'
+import { generateAngularBaseComponent, generateAngularComponent } from './angular'
+import { generateAstroBaseComponent, generateAstroComponent } from './astro'
+import { generateLitBaseComponent, generateLitComponent } from './lit'
 import { generateCreateIcon, generateReactComponent } from './react'
+import { generateReactLikeBaseComponent, generateReactLikeComponent } from './react-like'
 import { generateSvelteComponent, generateSvelteIcon } from './svelte'
+import { generateVanillaBaseComponent, generateVanillaComponent } from './vanilla'
 import { generateVueComponent, generateVueIcon } from './vue'
 
 /**
@@ -133,6 +138,202 @@ class SvelteStrategy implements FrameworkStrategy {
 }
 
 /**
+ * Solid.js framework strategy
+ */
+class SolidStrategy implements FrameworkStrategy {
+  name: Framework = 'solid'
+
+  getComponentExtension = (typescript: boolean): string => {
+    return typescript ? 'tsx' : 'jsx'
+  }
+
+  getIndexExtension = (typescript: boolean): string => {
+    return typescript ? 'ts' : 'js'
+  }
+
+  generateComponent = (
+    componentName: string,
+    iconNode: IconNode[],
+    typescript: boolean,
+    keepColors?: boolean,
+  ): string => {
+    return generateReactLikeComponent(componentName, iconNode, typescript, keepColors ?? false, 'solid')
+  }
+
+  generateBaseComponent = (typescript: boolean): { code: string, fileName: string } => {
+    return generateReactLikeBaseComponent(typescript, 'solid')
+  }
+}
+
+/**
+ * Preact framework strategy
+ */
+class PreactStrategy implements FrameworkStrategy {
+  name: Framework = 'preact'
+
+  getComponentExtension = (typescript: boolean): string => {
+    return typescript ? 'tsx' : 'jsx'
+  }
+
+  getIndexExtension = (typescript: boolean): string => {
+    return typescript ? 'ts' : 'js'
+  }
+
+  generateComponent = (
+    componentName: string,
+    iconNode: IconNode[],
+    typescript: boolean,
+    keepColors?: boolean,
+  ): string => {
+    return generateReactLikeComponent(componentName, iconNode, typescript, keepColors ?? false, 'preact')
+  }
+
+  generateBaseComponent = (typescript: boolean): { code: string, fileName: string } => {
+    return generateReactLikeBaseComponent(typescript, 'preact')
+  }
+}
+
+/**
+ * Vanilla JS framework strategy
+ */
+class VanillaStrategy implements FrameworkStrategy {
+  name: Framework = 'vanilla'
+
+  getComponentExtension = (typescript: boolean): string => {
+    return typescript ? 'ts' : 'js'
+  }
+
+  getIndexExtension = (typescript: boolean): string => {
+    return typescript ? 'ts' : 'js'
+  }
+
+  generateComponent = (
+    componentName: string,
+    iconNode: IconNode[],
+    typescript: boolean,
+    keepColors?: boolean,
+  ): string => {
+    return generateVanillaComponent(componentName, iconNode, typescript, keepColors ?? false)
+  }
+
+  generateBaseComponent = (typescript: boolean): { code: string, fileName: string } => {
+    return generateVanillaBaseComponent(typescript)
+  }
+}
+
+/**
+ * Lit (Web Components) framework strategy
+ */
+class LitStrategy implements FrameworkStrategy {
+  name: Framework = 'lit'
+
+  getComponentExtension = (typescript: boolean): string => {
+    return typescript ? 'ts' : 'js'
+  }
+
+  getIndexExtension = (typescript: boolean): string => {
+    return typescript ? 'ts' : 'js'
+  }
+
+  generateComponent = (
+    componentName: string,
+    iconNode: IconNode[],
+    typescript: boolean,
+    keepColors?: boolean,
+  ): string => {
+    return generateLitComponent(componentName, iconNode, typescript, keepColors ?? false)
+  }
+
+  generateBaseComponent = (typescript: boolean): { code: string, fileName: string } => {
+    return generateLitBaseComponent(typescript)
+  }
+}
+
+/**
+ * Qwik framework strategy
+ */
+class QwikStrategy implements FrameworkStrategy {
+  name: Framework = 'qwik'
+
+  getComponentExtension = (typescript: boolean): string => {
+    return typescript ? 'tsx' : 'jsx'
+  }
+
+  getIndexExtension = (typescript: boolean): string => {
+    return typescript ? 'ts' : 'js'
+  }
+
+  generateComponent = (
+    componentName: string,
+    iconNode: IconNode[],
+    typescript: boolean,
+    keepColors?: boolean,
+  ): string => {
+    return generateReactLikeComponent(componentName, iconNode, typescript, keepColors ?? false, 'qwik')
+  }
+
+  generateBaseComponent = (typescript: boolean): { code: string, fileName: string } => {
+    return generateReactLikeBaseComponent(typescript, 'qwik')
+  }
+}
+
+/**
+ * Astro framework strategy
+ */
+class AstroStrategy implements FrameworkStrategy {
+  name: Framework = 'astro'
+
+  getComponentExtension = (_typescript: boolean): string => {
+    return 'astro'
+  }
+
+  getIndexExtension = (typescript: boolean): string => {
+    return typescript ? 'ts' : 'js'
+  }
+
+  generateComponent = (
+    componentName: string,
+    iconNode: IconNode[],
+    typescript: boolean,
+    keepColors?: boolean,
+  ): string => {
+    return generateAstroComponent(componentName, iconNode, typescript, keepColors ?? false)
+  }
+
+  generateBaseComponent = (typescript: boolean): { code: string, fileName: string } => {
+    return generateAstroBaseComponent(typescript)
+  }
+}
+
+/**
+ * Angular framework strategy
+ */
+class AngularStrategy implements FrameworkStrategy {
+  name: Framework = 'angular'
+
+  getComponentExtension = (_typescript: boolean): string => {
+    return 'ts'
+  }
+
+  getIndexExtension = (_typescript: boolean): string => {
+    return 'ts'
+  }
+
+  generateComponent = (
+    componentName: string,
+    iconNode: IconNode[],
+    typescript: boolean,
+    keepColors?: boolean,
+  ): string => {
+    return generateAngularComponent(componentName, iconNode, typescript, keepColors ?? false)
+  }
+
+  generateBaseComponent = (typescript: boolean): { code: string, fileName: string } => {
+    return generateAngularBaseComponent(typescript)
+  }
+}
+
+/**
  * Framework strategy registry
  */
 class FrameworkRegistry {
@@ -143,6 +344,13 @@ class FrameworkRegistry {
     this.register(new ReactStrategy())
     this.register(new VueStrategy())
     this.register(new SvelteStrategy())
+    this.register(new SolidStrategy())
+    this.register(new PreactStrategy())
+    this.register(new VanillaStrategy())
+    this.register(new LitStrategy())
+    this.register(new QwikStrategy())
+    this.register(new AstroStrategy())
+    this.register(new AngularStrategy())
   }
 
   /**

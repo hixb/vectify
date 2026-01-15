@@ -1,0 +1,10 @@
+{{#if typescript}}
+import type { IconNode } from 'vectify'
+{{/if}}
+import { createIcon } from './createIcon'
+
+export const iconNode{{#if typescript}}: IconNode[]{{/if}} = [
+{{{formattedNodes}}}
+]
+
+export const {{componentName}} = createIcon('{{componentName}}', iconNode, {{keepColors}})

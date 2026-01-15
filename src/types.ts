@@ -38,7 +38,7 @@ export interface IconProps {
 /**
  * Framework types supported
  */
-export type Framework = 'react' | 'vue' | 'svelte'
+export type Framework = 'react' | 'vue' | 'svelte' | 'solid' | 'preact' | 'lit' | 'angular' | 'qwik' | 'astro' | 'vanilla'
 
 /**
  * Main configuration interface

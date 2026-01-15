@@ -1,0 +1,111 @@
+---
+import type { IconNode } from 'vectify'
+
+export interface Props {
+  size?: number | string
+  color?: string
+  strokeWidth?: number | string
+  class?: string
+  title?: string
+  'aria-label'?: string
+  'aria-hidden'?: boolean | 'true' | 'false'
+}
+
+interface IconBaseProps extends Props {
+  iconNode: IconNode[]
+  keepColors?: boolean
+}
+
+const {
+  size = 24,
+  color = 'currentColor',
+  strokeWidth = 2,
+  class: className,
+  title,
+  'aria-label': ariaLabel,
+  'aria-hidden': ariaHidden,
+  iconNode,
+  keepColors = false,
+  ...props
+} = Astro.props as IconBaseProps
+
+// Determine if icon should be hidden from screen readers
+const shouldHide = ariaHidden !== undefined ? ariaHidden : (!title && !ariaLabel)
+
+const mergedClassName = className ? `vectify-icon ${className}` : 'vectify-icon'
+
+function renderNode(node: IconNode): any {
+  const [type, attrs, children] = node
+
+  let cleanedAttrs: Record<string, any>
+
+  if (keepColors) {
+    cleanedAttrs = attrs
+  } else {
+    // Track color attributes to determine icon type
+    let hasFill = false
+    let hasStroke = false
+    let originalStrokeWidth: number | string | undefined
+
+    Object.entries(attrs).forEach(([key, value]) => {
+      if (key === 'fill' && value !== 'none') {
+        hasFill = true
+      }
+      if (key === 'stroke') {
+        hasStroke = true
+      }
+      if (key === 'strokeWidth' || key === 'stroke-width') {
+        originalStrokeWidth = value
+      }
+    })
+
+    // Keep non-color attributes
+    cleanedAttrs = Object.fromEntries(
+      Object.entries(attrs).filter(([key]) =>
+        !['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key)
+      )
+    )
+
+    // Apply color based on original attributes
+    if (hasFill) {
+      cleanedAttrs.fill = color
+    } else if (hasStroke) {
+      cleanedAttrs.fill = 'none'
+      cleanedAttrs.stroke = color
+      cleanedAttrs['stroke-width'] = originalStrokeWidth ?? strokeWidth
+      cleanedAttrs['stroke-linecap'] = 'round'
+      cleanedAttrs['stroke-linejoin'] = 'round'
+    }
+  }
+
+  return {
+    type,
+    attrs: cleanedAttrs,
+    children: children && children.length > 0 ? children.map(renderNode) : []
+  }
+}
+
+const processedNodes = iconNode.map(renderNode)
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  aria-hidden={shouldHide}
+  aria-label={ariaLabel}
+  role={title || ariaLabel ? 'img' : undefined}
+  {...props}
+  class={mergedClassName}
+>
+  {title && <title>{title}</title>}
+  {processedNodes.map((node) => {
+    const Element = node.type as any
+    return <Element {...node.attrs}>
+      {node.children && node.children.length > 0 && node.children.map((child: any) => {
+        const ChildElement = child.type as any
+        return <ChildElement {...child.attrs} />
+      })}
+    </Element>
+  })}
+</svg>

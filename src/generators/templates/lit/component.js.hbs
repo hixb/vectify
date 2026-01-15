@@ -1,0 +1,12 @@
+import { customElement } from 'lit/decorators.js'
+import { IconBase } from './createIcon'
+
+export const iconNode = [
+{{{formattedNodes}}}
+]
+
+@customElement('{{componentName}}')
+export class {{componentName}} extends IconBase {
+  iconNode = iconNode
+  keepColors = {{keepColors}}
+}
