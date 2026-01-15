@@ -3,11 +3,6 @@
     :width="size"
     :height="size"
     viewBox="0 0 24 24"
-    fill="none"
-    :stroke="color"
-    :stroke-width="strokeWidth"
-    stroke-linecap="round"
-    stroke-linejoin="round"
     :aria-hidden="shouldHide"
     :aria-label="ariaLabel"
     :role="title || ariaLabel ? 'img' : undefined"
@@ -16,7 +11,7 @@
   >
     <title v-if="title"></title>
     <component
-      v-for="(node, index) in iconNode"
+      v-for="(node, index) in cleanedIconNode"
       :key="index"
       :is="renderNode(node)"
     />
@@ -44,10 +39,6 @@ export default defineComponent({
       type: String,
       default: 'currentColor'
     },
-    strokeWidth: {
-      type: [Number, String],
-      default: 2
-    },
     className: {
       type: String,
       default: ''
@@ -63,6 +54,10 @@ export default defineComponent({
     ariaHidden: {
       type: [Boolean, String] as PropType<boolean | 'true' | 'false'>,
       default: undefined
+    },
+    keepColors: {
+      type: Boolean,
+      default: false
     }
   },
   setup(props) {
@@ -75,6 +70,53 @@ export default defineComponent({
     const shouldHide = computed(() => {
       return props.ariaHidden !== undefined ? props.ariaHidden : (!props.title && !props.ariaLabel)
     })
+
+    // Clean icon node to apply color
+    const cleanedIconNode = computed(() => {
+      if (props.keepColors) {
+        return props.iconNode
+      }
+
+      return cleanIconNodes(props.iconNode, props.color)
+    })
+
+    function cleanIconNodes(nodes: IconNode[], color: string): IconNode[] {
+      return nodes.map(node => {
+        const [type, attrs, children] = node
+
+        // Keep non-color attributes and determine if we need fill or stroke
+        const cleanedAttrs: Record<string, any> = {}
+        let hasFill = false
+        let hasStroke = false
+
+        Object.entries(attrs).forEach(([key, value]) => {
+          // Track color attributes
+          if (key === 'fill' && value !== 'none') {
+            hasFill = true
+          }
+          if (key === 'stroke') {
+            hasStroke = true
+          }
+
+          // Keep non-color attributes
+          if (!['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key)) {
+            cleanedAttrs[key] = value
+          }
+        })
+
+        // Apply color based on original attributes
+        if (hasFill) {
+          cleanedAttrs.fill = color
+        }
+        if (hasStroke) {
+          cleanedAttrs.stroke = color
+        }
+
+        const cleanedChildren = children ? cleanIconNodes(children, color) : undefined
+
+        return [type, cleanedAttrs, cleanedChildren] as IconNode
+      })
+    }
 
     function renderNode(node: IconNode): VNode {
       const [type, attrs, children] = node
@@ -93,7 +135,8 @@ export default defineComponent({
     return {
       renderNode,
       mergedClass,
-      shouldHide
+      shouldHide,
+      cleanedIconNode
     }
   }
 })

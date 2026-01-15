@@ -24,11 +24,6 @@ export function createIcon(name, iconNode, keepColors = false) {
         width={size}
         height={size}
         viewBox="0 0 24 24"
-        fill={keepColors ? undefined : "none"}
-        stroke={keepColors ? undefined : color}
-        strokeWidth={keepColors ? undefined : strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
         aria-hidden={shouldHide}
         aria-label={ariaLabel}
         role={title || ariaLabel ? 'img' : undefined}
@@ -36,7 +31,7 @@ export function createIcon(name, iconNode, keepColors = false) {
         className={mergedClassName}
       >
         {title && <title>{title}</title>}
-        {renderIconNode(iconNode)}
+        {renderIconNode(iconNode, keepColors, color, strokeWidth)}
       </svg>
     )
   })
@@ -45,16 +40,58 @@ export function createIcon(name, iconNode, keepColors = false) {
   return Icon
 }
 
-function renderIconNode(nodes) {
+function renderIconNode(nodes, keepColors, color, strokeWidth) {
   return nodes.map((node, index) => {
     const [type, attrs, children] = node
-    const props = { key: index, ...attrs }
+
+    let cleanedAttrs
+
+    if (keepColors) {
+      cleanedAttrs = attrs
+    } else {
+      // Track color attributes to determine icon type
+      let hasFill = false
+      let hasStroke = false
+      let originalStrokeWidth
+
+      Object.entries(attrs).forEach(([key, value]) => {
+        if (key === 'fill' && value !== 'none') {
+          hasFill = true
+        }
+        if (key === 'stroke') {
+          hasStroke = true
+        }
+        if (key === 'strokeWidth' || key === 'stroke-width') {
+          originalStrokeWidth = value
+        }
+      })
+
+      // Keep non-color attributes
+      cleanedAttrs = Object.fromEntries(
+        Object.entries(attrs).filter(([key]) =>
+          !['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key)
+        )
+      )
+
+      // Apply color based on original attributes
+      if (hasFill) {
+        cleanedAttrs.fill = color
+      } else if (hasStroke) {
+        cleanedAttrs.fill = 'none'
+        cleanedAttrs.stroke = color
+        cleanedAttrs.strokeWidth = originalStrokeWidth ?? strokeWidth
+        cleanedAttrs.strokeLinecap = 'round'
+        cleanedAttrs.strokeLinejoin = 'round'
+      }
+    }
+
+    const props = { key: index, ...cleanedAttrs }
 
     if (children && children.length > 0) {
       return createElement(
         type,
         props,
-        renderIconNode(children)
+        renderIconNode(children, keepColors, color, strokeWidth)
       )
     }
 

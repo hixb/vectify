@@ -13,7 +13,7 @@ const DEFAULT_SVGO_CONFIG = {
     {
       name: 'removeAttrs',
       params: {
-        attrs: ['class', 'data-name', 'fill'],
+        attrs: ['class', 'data-name'],
       },
     },
   ],

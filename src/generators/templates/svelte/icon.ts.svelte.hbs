@@ -10,6 +10,7 @@
   export let title: string = ''
   export let ariaLabel: string = ''
   export let ariaHidden: boolean | 'true' | 'false' | undefined = undefined
+  export let keepColors: boolean = false
 
   let svgElement: SVGSVGElement
 
@@ -18,6 +19,57 @@
 
   // Determine if icon should be hidden from screen readers
   $: shouldHide = ariaHidden !== undefined ? ariaHidden : (!title && !ariaLabel)
+
+  // Clean icon node to apply color
+  $: cleanedIconNode = keepColors ? iconNode : cleanIconNodes(iconNode, color, strokeWidth)
+
+  function cleanIconNodes(nodes: IconNode[], color: string, strokeWidth: number | string): IconNode[] {
+    return nodes.map(node => {
+      const [type, attrs, children] = node
+
+      // Keep non-color attributes and determine if we need fill or stroke
+      const cleanedAttrs: Record<string, any> = {}
+      let hasFill = false
+      let hasStroke = false
+      let originalStrokeWidth: number | string | undefined
+
+      Object.entries(attrs).forEach(([key, value]) => {
+        // Track color attributes
+        if (key === 'fill') {
+          if (value !== 'none') {
+            hasFill = true
+          }
+        }
+        if (key === 'stroke') {
+          hasStroke = true
+        }
+        if (key === 'strokeWidth' || key === 'stroke-width') {
+          originalStrokeWidth = value
+        }
+
+        // Keep non-color attributes
+        if (!['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key)) {
+          cleanedAttrs[key] = value
+        }
+      })
+
+      // Apply color based on original attributes
+      if (hasFill) {
+        cleanedAttrs.fill = color
+      } else if (hasStroke) {
+        // Stroke-based icon: set fill to none to prevent default black fill
+        cleanedAttrs.fill = 'none'
+        cleanedAttrs.stroke = color
+        cleanedAttrs.strokeWidth = originalStrokeWidth ?? strokeWidth
+        cleanedAttrs.strokeLinecap = 'round'
+        cleanedAttrs.strokeLinejoin = 'round'
+      }
+
+      const cleanedChildren = children ? cleanIconNodes(children, color, strokeWidth) : undefined
+
+      return cleanedChildren ? [type, cleanedAttrs, cleanedChildren] : [type, cleanedAttrs]
+    }) as IconNode[]
+  }
 
   function renderNode(node: IconNode): SVGElement {
     const [type, attrs, children] = node
@@ -49,7 +101,7 @@
     }
 
     // Render icon nodes after title
-    iconNode.forEach(node => {
+    cleanedIconNode.forEach(node => {
       svgElement.appendChild(renderNode(node))
     })
   })
@@ -60,11 +112,6 @@
   width={size}
   height={size}
   viewBox="0 0 24 24"
-  fill="none"
-  stroke={color}
-  stroke-width={strokeWidth}
-  stroke-linecap="round"
-  stroke-linejoin="round"
   aria-hidden={shouldHide}
   aria-label={ariaLabel || undefined}
   role={title || ariaLabel ? 'img' : undefined}

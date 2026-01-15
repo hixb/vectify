@@ -1,10 +1,23 @@
 <script setup lang="ts">
 import { AirpodCase1 } from "./icons";
+
+const iconProps = {
+  size: 32,
+  color: 'blue',
+}
 </script>
 
 <template>
   <div>
-    <AirpodCase1 />
+    <!-- Text v-bind -->
+    <AirpodCase1 v-bind="iconProps" />
+
+    <!-- Testing class merging -->
+    <AirpodCase1 class="custom-class" />
+
+    <!-- Testing accessibility -->
+    <AirpodCase1 title="Return" />
+    <AirpodCase1 aria-label="Close" />
   </div>
 </template>
 
