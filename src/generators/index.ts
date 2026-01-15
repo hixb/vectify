@@ -104,7 +104,7 @@ async function generateIconComponent(
 
   switch (config.framework) {
     case 'react':
-      code = generateReactComponent(componentName, iconNode, config.typescript ?? true)
+      code = generateReactComponent(componentName, iconNode, config.typescript ?? true, config.keepColors ?? false)
       break
     case 'vue':
       code = generateVueComponent(componentName, iconNode, config.typescript ?? true)

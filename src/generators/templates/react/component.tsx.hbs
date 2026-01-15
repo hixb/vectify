@@ -7,5 +7,5 @@ export const iconNode{{#if typescript}}: IconNode[]{{/if}} = [
 {{{formattedNodes}}}
 ]
 
-const {{componentName}} = createIcon('{{componentName}}', iconNode)
+const {{componentName}} = createIcon('{{componentName}}', iconNode, {{keepColors}})
 export default {{componentName}}

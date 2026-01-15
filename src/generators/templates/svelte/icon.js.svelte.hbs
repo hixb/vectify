@@ -6,8 +6,17 @@
   export let color = 'currentColor'
   export let strokeWidth = 2
   export let className = ''
+  export let title = ''
+  export let ariaLabel = ''
+  export let ariaHidden = undefined
 
   let svgElement
+
+  // Merge className with default class
+  $: mergedClass = className ? `vectify-icon ${className}` : 'vectify-icon'
+
+  // Determine if icon should be hidden from screen readers
+  $: shouldHide = ariaHidden !== undefined ? ariaHidden : (!title && !ariaLabel)
 
   function renderNode(node) {
     const [type, attrs, children] = node
@@ -29,12 +38,16 @@
   }
 
   onMount(() => {
-    // Clear existing content
+    // Clear existing content (except title if present)
     while (svgElement.firstChild) {
-      svgElement.removeChild(svgElement.firstChild)
+      if (svgElement.firstChild.nodeName !== 'title') {
+        svgElement.removeChild(svgElement.firstChild)
+      } else {
+        break
+      }
     }
 
-    // Render icon nodes
+    // Render icon nodes after title
     iconNode.forEach(node => {
       svgElement.appendChild(renderNode(node))
     })
@@ -51,6 +64,13 @@
   stroke-width={strokeWidth}
   stroke-linecap="round"
   stroke-linejoin="round"
-  class={className}
+  class={mergedClass}
+  aria-hidden={shouldHide}
+  aria-label={ariaLabel || undefined}
+  role={title || ariaLabel ? 'img' : undefined}
   {...$$restProps}
-/>
+>
+  {#if title}
+    <title>{title}</title>
+  {/if}
+</svg>

@@ -5,7 +5,7 @@ import { getReactTemplatePath, renderTemplate } from './templates/template-engin
 /**
  * Generate React icon component
  */
-export function generateReactComponent(componentName: string, iconNode: IconNode[], typescript: boolean): string {
+export function generateReactComponent(componentName: string, iconNode: IconNode[], typescript: boolean, keepColors = false): string {
   const formattedNodes = iconNode.map(node => formatIconNode(node, 2)).join(',\n')
   const templatePath = getReactTemplatePath(typescript, 'component')
 
@@ -13,6 +13,7 @@ export function generateReactComponent(componentName: string, iconNode: IconNode
     typescript,
     componentName,
     formattedNodes,
+    keepColors,
   })
 }
 

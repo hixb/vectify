@@ -11,6 +11,7 @@ const DEFAULT_CONFIG: Partial<IconForgeConfig> = {
   output: './src/icons',
   typescript: true,
   optimize: true,
+  keepColors: false,
   prefix: '',
   suffix: '',
   configDir: '.',

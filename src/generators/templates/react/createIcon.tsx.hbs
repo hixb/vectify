@@ -1,39 +1,56 @@
-import { createElement } from 'react'
+import { createElement, forwardRef } from 'react'
 import type { IconNode, IconProps } from 'vectify'
-import type { FC, ReactNode } from 'react'
+import type { ReactNode, SVGProps } from 'react'
 
-export interface CreateIconProps extends IconProps {
+export interface CreateIconProps extends IconProps, Omit<SVGProps<SVGSVGElement>, keyof IconProps> {
   size?: number | string
   color?: string
   strokeWidth?: number | string
   className?: string
+  title?: string
+  'aria-label'?: string
+  'aria-hidden'?: boolean | 'true' | 'false'
 }
 
-export function createIcon(name: string,  iconNode: IconNode[]): FC<CreateIconProps> {
-  const Icon: FC<CreateIconProps> = ({
+export function createIcon(name: string, iconNode: IconNode[], keepColors = false) {
+  const Icon = forwardRef<SVGSVGElement, CreateIconProps>(({
     size = 24,
     color = 'currentColor',
     strokeWidth = 2,
     className,
+    title,
+    'aria-label': ariaLabel,
+    'aria-hidden': ariaHidden,
     ...props
-  }) => {
+  }, ref) => {
+    // Determine if icon should be hidden from screen readers
+    const shouldHide = ariaHidden !== undefined ? ariaHidden : (!title && !ariaLabel)
+
+    // Merge className with default icon class
+    const mergedClassName = className ? `vectify-icon ${className}` : 'vectify-icon'
+
     return (
       <svg
+        ref={ref}
         width={size}
         height={size}
         viewBox="0 0 24 24"
-        fill="none"
-        stroke={color}
-        strokeWidth={strokeWidth}
+        fill={keepColors ? undefined : "none"}
+        stroke={keepColors ? undefined : color}
+        strokeWidth={keepColors ? undefined : strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={className}
+        className={mergedClassName}
+        aria-hidden={shouldHide}
+        aria-label={ariaLabel}
+        role={title || ariaLabel ? 'img' : undefined}
         {...props}
       >
+        {title && <title>{title}</title>}
         {renderIconNode(iconNode)}
       </svg>
     )
-  }
+  })
 
   Icon.displayName = name
   return Icon

@@ -8,9 +8,13 @@
     :stroke-width="strokeWidth"
     stroke-linecap="round"
     stroke-linejoin="round"
-    :class="className"
+    :class="mergedClass"
+    :aria-hidden="shouldHide"
+    :aria-label="ariaLabel"
+    :role="title || ariaLabel ? 'img' : undefined"
     v-bind="$attrs"
   >
+    <title v-if="title">{{ title }}</title>
     <component
       v-for="(node, index) in iconNode"
       :key="index"
@@ -20,7 +24,7 @@
 </template>
 
 <script>
-import { defineComponent, h } from 'vue'
+import { computed, defineComponent, h } from 'vue'
 
 export default defineComponent({
   name: 'Icon',
@@ -45,9 +49,31 @@ export default defineComponent({
     className: {
       type: String,
       default: ''
+    },
+    title: {
+      type: String,
+      default: ''
+    },
+    ariaLabel: {
+      type: String,
+      default: ''
+    },
+    ariaHidden: {
+      type: [Boolean, String],
+      default: undefined
     }
   },
   setup(props) {
+    // Merge className with default class
+    const mergedClass = computed(() => {
+      return props.className ? `vectify-icon ${props.className}` : 'vectify-icon'
+    })
+
+    // Determine if icon should be hidden from screen readers
+    const shouldHide = computed(() => {
+      return props.ariaHidden !== undefined ? props.ariaHidden : (!props.title && !props.ariaLabel)
+    })
+
     function renderNode(node) {
       const [type, attrs, children] = node
 
@@ -63,7 +89,9 @@ export default defineComponent({
     }
 
     return {
-      renderNode
+      renderNode,
+      mergedClass,
+      shouldHide
     }
   }
 })

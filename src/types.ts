@@ -25,10 +25,13 @@ export type IconNode = [
  * Icon component props
  */
 export interface IconProps {
-  size?: number | string
-  color?: string
-  strokeWidth?: number | string
-  className?: string
+  'size'?: number | string
+  'color'?: string
+  'strokeWidth'?: number | string
+  'className'?: string
+  'title'?: string
+  'aria-label'?: string
+  'aria-hidden'?: boolean | 'true' | 'false'
   [key: string]: any
 }
 
@@ -82,6 +85,14 @@ export interface IconForgeConfig {
    * @default true
    */
   optimize?: boolean
+
+  /**
+   * Keep original colors from SVG files
+   * When true, preserves fill and stroke colors from the original SVG
+   * When false, uses currentColor for single-color icons
+   * @default false
+   */
+  keepColors?: boolean
 
   /**
    * Prefix for component names
