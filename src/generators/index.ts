@@ -166,7 +166,6 @@ async function generateIndexFile(svgFiles: string[], config: IconForgeConfig, dr
   const typescript = config.typescript ?? true
   const strategy = getFrameworkStrategy(config.framework)
   const ext = strategy.getIndexExtension(typescript)
-  const componentExt = strategy.getComponentExtension(typescript)
 
   // Vue and Svelte use default exports, other frameworks use named exports
   const usesDefaultExport = config.framework === 'vue' || config.framework === 'svelte'
@@ -181,11 +180,12 @@ async function generateIndexFile(svgFiles: string[], config: IconForgeConfig, dr
         config.transform,
       )
 
+      // Don't include file extension in the import path
       if (usesDefaultExport) {
-        return `export { default as ${componentName} } from './${componentName}.${componentExt}'`
+        return `export { default as ${componentName} } from './${componentName}'`
       }
       else {
-        return `export { ${componentName} } from './${componentName}.${componentExt}'`
+        return `export { ${componentName} } from './${componentName}'`
       }
     })
     .join('\n')
