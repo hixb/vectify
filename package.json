@@ -1,6 +1,6 @@
 {
   "name": "vectify",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "packageManager": "pnpm@9.15.9",
   "description": "A powerful command-line tool to generate React, Vue, and Svelte icon components from SVG files",
   "author": "Xiaobing Zhu <hellozxb252@gmail.com>",
