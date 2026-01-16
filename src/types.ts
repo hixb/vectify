@@ -41,6 +41,37 @@ export interface IconProps {
 export type Framework = 'react' | 'vue' | 'svelte' | 'solid' | 'preact' | 'lit' | 'angular' | 'qwik' | 'astro' | 'vanilla'
 
 /**
+ * Formatter tool types
+ */
+export type FormatterTool = 'auto' | 'prettier' | 'eslint' | 'biome'
+
+/**
+ * Format configuration
+ */
+export interface FormatConfig {
+  /**
+   * Formatter tool to use
+   * - 'auto': Auto-detect based on project config files
+   * - 'prettier': Use Prettier
+   * - 'eslint': Use ESLint --fix
+   * - 'biome': Use Biome
+   * @default 'auto'
+   */
+  tool?: FormatterTool
+
+  /**
+   * Additional arguments to pass to the formatter
+   * @example '--single-quote'
+   */
+  args?: string
+}
+
+/**
+ * Format option type (shorthand or full config)
+ */
+export type FormatOption = boolean | FormatterTool | FormatConfig
+
+/**
  * Main configuration interface
  */
 export interface IconForgeConfig {
@@ -172,6 +203,16 @@ export interface IconForgeConfig {
      */
     debounce?: number
   }
+
+  /**
+   * Format generated files after generation
+   * - true: Auto-detect formatter (biome > prettier > eslint)
+   * - false: Disable formatting
+   * - 'prettier' | 'eslint' | 'biome': Use specific formatter
+   * - { tool: 'auto', args: '--single-quote' }: Full config
+   * @default false
+   */
+  format?: FormatOption
 
   /**
    * Lifecycle hooks

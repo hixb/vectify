@@ -20,6 +20,7 @@
 - [配置选项](#配置选项)
   - [基础配置](#基础配置)
   - [生成选项](#生成选项)
+  - [自动格式化](#自动格式化)
   - [监听模式](#监听模式)
   - [SVGO 配置](#svgo-配置)
   - [生命周期钩子](#生命周期钩子)
@@ -185,6 +186,7 @@ npx vectify watch [选项]
 | `prefix` | `string` | `''` | ❌ | 添加到所有组件名称前的前缀。用于命名空间 | `prefix: 'Icon'` → `IconArrowRight` |
 | `suffix` | `string` | `''` | ❌ | 添加到所有组件名称后的后缀 | `suffix: 'Icon'` → `ArrowRightIcon` |
 | `transform` | `(name: string) => string` | - | ❌ | 自定义函数，将 SVG 文件名转换为组件名。覆盖默认的 PascalCase 转换和 prefix/suffix | `transform: (n) => 'X' + n` |
+| `format` | `boolean` \| `'prettier'` \| `'eslint'` \| `'biome'` \| `FormatConfig` | `false` | ❌ | 生成后自动格式化文件。详见 [自动格式化](#自动格式化) | `format: true` |
 
 #### `generateOptions` 对象
 
@@ -194,6 +196,71 @@ npx vectify watch [选项]
 | `types` | `boolean` | `true` | 生成 TypeScript 声明文件 (.d.ts)。仅在 `typescript: true` 时生效 | `types: true` |
 | `preview` | `boolean` | `false` | 生成交互式 `preview.html` 用于本地浏览所有图标。适合设计审查 | `preview: true` |
 | `cleanOutput` | `boolean` | `false` | 移除不再有对应 SVG 文件的孤立组件。帮助保持输出目录整洁 | `cleanOutput: true` |
+
+#### 自动格式化
+
+Vectify 可以使用项目中的格式化工具自动格式化生成的文件。确保生成的代码符合项目的代码风格。
+
+**快速开始：**
+
+```typescript
+export default defineConfig({
+  framework: 'react',
+  input: './icons',
+  output: './src/icons',
+  format: true, // 自动检测并使用项目格式化工具
+})
+```
+
+**格式化选项：**
+
+| 值 | 说明 |
+|----|------|
+| `false` | 禁用格式化（默认） |
+| `true` | 自动检测格式化工具（biome > prettier > eslint） |
+| `'prettier'` | 使用 Prettier |
+| `'eslint'` | 使用 ESLint --fix |
+| `'biome'` | 使用 Biome |
+| `{ tool, args }` | 完整配置对象 |
+
+**自动检测优先级：**
+
+当 `format: true` 时，Vectify 按以下顺序查找配置文件：
+1. `biome.json` / `biome.jsonc` → 使用 Biome
+2. `.prettierrc*` / `prettier.config.*` → 使用 Prettier
+3. `eslint.config.*` / `.eslintrc*` → 使用 ESLint
+
+**完整配置：**
+
+```typescript
+export default defineConfig({
+  format: {
+    tool: 'prettier',       // 'auto' | 'prettier' | 'eslint' | 'biome'
+    args: '--single-quote', // 额外的 CLI 参数
+  },
+})
+```
+
+**示例：**
+
+```typescript
+// 自动检测格式化工具
+format: true
+
+// 使用指定的格式化工具
+format: 'prettier'
+format: 'eslint'
+format: 'biome'
+
+// 带自定义参数
+format: {
+  tool: 'prettier',
+  args: '--tab-width 4',
+}
+
+// 禁用格式化
+format: false
+```
 
 #### `watch` 对象
 

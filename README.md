@@ -20,6 +20,7 @@ English | [简体中文](./README.zh-CN.md)
 - [Configuration](#configuration)
   - [Basic Options](#basic-options)
   - [Generation Options](#generation-options)
+  - [Auto Formatting](#auto-formatting)
   - [Watch Mode](#watch-mode)
   - [SVGO Configuration](#svgo-configuration)
   - [Lifecycle Hooks](#lifecycle-hooks)
@@ -185,6 +186,7 @@ All available options for `defineConfig()` are documented in the tables below.
 | `prefix` | `string` | `''` | ❌ | Prefix added to all component names. Useful for namespacing. | `prefix: 'Icon'` → `IconArrowRight` |
 | `suffix` | `string` | `''` | ❌ | Suffix added to all component names. | `suffix: 'Icon'` → `ArrowRightIcon` |
 | `transform` | `(name: string) => string` | - | ❌ | Custom function to transform SVG filename to component name. Overrides default PascalCase conversion and prefix/suffix. | `transform: (n) => 'X' + n` |
+| `format` | `boolean` \| `'prettier'` \| `'eslint'` \| `'biome'` \| `FormatConfig` | `false` | ❌ | Auto-format generated files after generation. See [Auto Formatting](#auto-formatting) for details. | `format: true` |
 
 #### `generateOptions` Object
 
@@ -194,6 +196,71 @@ All available options for `defineConfig()` are documented in the tables below.
 | `types` | `boolean` | `true` | Generate TypeScript declaration files (.d.ts). Only applies when `typescript: true`. | `types: true` |
 | `preview` | `boolean` | `false` | Generate interactive `preview.html` for browsing all icons locally. Useful for design review. | `preview: true` |
 | `cleanOutput` | `boolean` | `false` | Remove orphaned component files that no longer have corresponding SVG files. Helps keep output directory clean. | `cleanOutput: true` |
+
+#### Auto Formatting
+
+Vectify can automatically format generated files using your project's formatter. This ensures generated code matches your project's code style.
+
+**Quick Start:**
+
+```typescript
+export default defineConfig({
+  framework: 'react',
+  input: './icons',
+  output: './src/icons',
+  format: true, // Auto-detect and use project formatter
+})
+```
+
+**Format Options:**
+
+| Value | Description |
+|-------|-------------|
+| `false` | Disable formatting (default) |
+| `true` | Auto-detect formatter (biome > prettier > eslint) |
+| `'prettier'` | Use Prettier |
+| `'eslint'` | Use ESLint --fix |
+| `'biome'` | Use Biome |
+| `{ tool, args }` | Full configuration object |
+
+**Auto-Detection Priority:**
+
+When `format: true`, Vectify looks for config files in this order:
+1. `biome.json` / `biome.jsonc` → Uses Biome
+2. `.prettierrc*` / `prettier.config.*` → Uses Prettier
+3. `eslint.config.*` / `.eslintrc*` → Uses ESLint
+
+**Full Configuration:**
+
+```typescript
+export default defineConfig({
+  format: {
+    tool: 'prettier',      // 'auto' | 'prettier' | 'eslint' | 'biome'
+    args: '--single-quote', // Additional CLI arguments
+  },
+})
+```
+
+**Examples:**
+
+```typescript
+// Auto-detect formatter
+format: true
+
+// Use specific formatter
+format: 'prettier'
+format: 'eslint'
+format: 'biome'
+
+// With custom arguments
+format: {
+  tool: 'prettier',
+  args: '--tab-width 4',
+}
+
+// Disable formatting
+format: false
+```
 
 #### `watch` Object
 

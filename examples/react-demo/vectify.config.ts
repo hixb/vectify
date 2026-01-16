@@ -9,6 +9,7 @@ export default defineConfig({
   optimize: true,
   prefix: '',
   suffix: '',
+  format: 'eslint',
 
   // SVGO configuration (optional)
   // svgoConfig: {

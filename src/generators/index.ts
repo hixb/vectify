@@ -2,6 +2,7 @@ import type { GenerationStats, IconForgeConfig } from '../types'
 import path from 'node:path'
 import { optimizeSvg } from '../parsers/optimizer'
 import { parseSvg } from '../parsers/svg-parser'
+import { formatOutput } from '../utils/formatter'
 import { ensureDir, getComponentName, getSvgFiles, readFile, writeFile } from '../utils/helpers'
 import { getFrameworkStrategy } from './framework-strategy'
 
@@ -63,6 +64,17 @@ export async function generateIcons(config: IconForgeConfig, dryRun = false): Pr
     // Generate preview.html
     if (config.generateOptions?.preview && !dryRun) {
       await generatePreviewHtml(svgFiles, config)
+    }
+
+    // Format generated files
+    if (config.format && !dryRun) {
+      const formatResult = await formatOutput(config.output, config.format)
+      if (formatResult.success && formatResult.tool) {
+        console.log(`Formatted with ${formatResult.tool}`)
+      }
+      else if (formatResult.error) {
+        console.warn(formatResult.error)
+      }
     }
 
     // Call onComplete hook
