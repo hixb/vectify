@@ -1,5 +1,18 @@
 # vectify
 
+## 2.0.2
+
+### Patch Changes
+
+- feat(formatter): add auto-formatting support for generated files
+  - Implement formatter detection based on project config files: biome, prettier, eslint
+  - Add formatOutput util to run formatter commands on output directory
+  - Support format option as boolean, string, or config object with tool and args
+  - Integrate formatting step after file generation with error handling and user feedback
+  - Update types to include formatter options and configuration interface
+  - Document new auto-formatting feature with usage examples in README and README.zh-CN
+  - Add formatter related dependencies and helper functions for async execution and file checks
+
 ## 2.0.1
 
 ### Patch Changes
