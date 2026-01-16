@@ -1,3 +1,5 @@
+'use client'
+
 import type { IconNode } from 'vectify'
 import { createIcon } from './createIcon'
 

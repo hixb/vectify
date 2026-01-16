@@ -63,7 +63,7 @@
       const grid = document.getElementById('iconGrid');
       grid.innerHTML = '';
 
-      const filteredIcons = icons.filter((name, index) =>
+      const filteredIcons = icons.filter((name) =>
         name.toLowerCase().includes(searchQuery.toLowerCase())
       );
 

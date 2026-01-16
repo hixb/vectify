@@ -1,2 +1,2 @@
-export { default as AirpodsFullBattery } from './AirpodsFullBattery.tsx'
-export { default as Anonymous } from './Anonymous.tsx'
+export { default as AirpodsFullBattery } from './AirpodsFullBattery'
+export { default as Anonymous } from './Anonymous'

@@ -1,18 +1,20 @@
-import { createElement, forwardRef } from 'react'
+'use client'
+
+import type { ForwardRefExoticComponent, ReactNode, RefAttributes, SVGProps } from 'react'
 import type { IconNode, IconProps } from 'vectify'
-import type { ReactNode, SVGProps } from 'react'
+import { createElement, forwardRef } from 'react'
 
 export interface CreateIconProps extends IconProps, Omit<SVGProps<SVGSVGElement>, keyof IconProps> {
-  size?: number | string
-  color?: string
-  strokeWidth?: number | string
-  className?: string
-  title?: string
+  'size'?: number | string
+  'color'?: string
+  'strokeWidth'?: number | string
+  'className'?: string
+  'title'?: string
   'aria-label'?: string
   'aria-hidden'?: boolean | 'true' | 'false'
 }
 
-export function createIcon(name: string, iconNode: IconNode[], keepColors = false) {
+export function createIcon(name: string, iconNode: IconNode[], keepColors = false): ForwardRefExoticComponent<CreateIconProps & RefAttributes<SVGSVGElement>> {
   const Icon = forwardRef<SVGSVGElement, CreateIconProps>(({
     size = 24,
     color = 'currentColor',
@@ -56,7 +58,7 @@ function renderIconNode(
   nodes: IconNode[],
   keepColors: boolean,
   color: string,
-  strokeWidth: number | string
+  strokeWidth: number | string,
 ): ReactNode {
   return nodes.map((node, index) => {
     const [type, attrs, children] = node
@@ -65,7 +67,8 @@ function renderIconNode(
 
     if (keepColors) {
       cleanedAttrs = attrs
-    } else {
+    }
+    else {
       // Track color attributes to determine icon type
       let hasFill = false
       let hasStroke = false
@@ -86,14 +89,15 @@ function renderIconNode(
       // Keep non-color attributes
       cleanedAttrs = Object.fromEntries(
         Object.entries(attrs).filter(([key]) =>
-          !['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key)
-        )
+          !['stroke', 'fill', 'strokeWidth', 'stroke-width'].includes(key),
+        ),
       )
 
       // Apply color based on original attributes
       if (hasFill) {
         cleanedAttrs.fill = color
-      } else if (hasStroke) {
+      }
+      else if (hasStroke) {
         cleanedAttrs.fill = 'none'
         cleanedAttrs.stroke = color
         cleanedAttrs.strokeWidth = originalStrokeWidth ?? strokeWidth
@@ -108,7 +112,7 @@ function renderIconNode(
       return createElement(
         type,
         props,
-        renderIconNode(children, keepColors, color, strokeWidth)
+        renderIconNode(children, keepColors, color, strokeWidth),
       )
     }
 

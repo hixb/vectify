@@ -1,4 +1,6 @@
-import type { ReactNode, SVGProps } from 'react'
+'use client'
+
+import type { ForwardRefExoticComponent, ReactNode, RefAttributes, SVGProps } from 'react'
 import type { IconNode, IconProps } from 'vectify'
 import { createElement, forwardRef } from 'react'
 
@@ -12,7 +14,7 @@ export interface CreateIconProps extends IconProps, Omit<SVGProps<SVGSVGElement>
   'aria-hidden'?: boolean | 'true' | 'false'
 }
 
-export function createIcon(name: string, iconNode: IconNode[], keepColors = false) {
+export function createIcon(name: string, iconNode: IconNode[], keepColors = false): ForwardRefExoticComponent<CreateIconProps & RefAttributes<SVGSVGElement>> {
   const Icon = forwardRef<SVGSVGElement, CreateIconProps>(({
     size = 24,
     color = 'currentColor',

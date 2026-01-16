@@ -1,10 +1,12 @@
+'use client'
+
 {{#if typescript}}
 import type { IconNode } from 'vectify'
 {{/if}}
 import { createIcon } from './createIcon'
 
 export const iconNode{{#if typescript}}: IconNode[]{{/if}} = [
-{{{formattedNodes}}}
+{{{formattedNodes}}},
 ]
 
 const {{componentName}} = createIcon('{{componentName}}', iconNode, {{keepColors}})
